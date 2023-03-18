@@ -1,15 +1,14 @@
-from flask import Flask, request, Response, send_file
+from flask import Flask, request, Response, send_file, after_this_request
 import json
+import os
 from youtube_download_server.youtube_client import download, get_meta
 
-'''
-Env vars:
-- FLASK_APP=youtube-dl-mixtape
-- FLASK_ENV=development
-'''
 
-# create and configure the app
-app = Flask(__name__, instance_relative_config=True)
+# TODO how will this work during deployment
+app = Flask(__name__,
+            instance_relative_config=True,
+            static_url_path='',
+            static_folder='frontend/build')
 
 
 @app.route('/meta/<video_id>')
@@ -20,24 +19,44 @@ def get_meta_for_video(video_id):
     return response
 
 
-@app.route('/download', methods=['POST'])
+def get_extension(filename):
+    _, extension = os.path.splitext(filename)
+    return extension
+
+
+@app.route('/download', methods=['OPTIONS', 'POST'])
 def download_video_by_id():
+    if request.method == 'OPTIONS':
+        return Response('')
+
     body = request.get_json(force=True)
-    print("post body: " + str(body))
     video_id = body['video-id']
     filename = body['filename']
+    sections = body.get('sections', None)
     include_video = body.get('include-video', False)
     # TODO return bad request if missing params or wrong types
 
-    # TODO optionally take sections and handle with download
+    downloaded_path = download(video_id, sections, include_video)
 
-    downloaded = download(video_id)
+    @after_this_request
+    def delete_file(response):
+        try:
+            # TODO always getting 'file being used by another process'
+            # not sure if this would happen on linux though
+            os.remove(downloaded_path)
+        except Exception as ex:
+            print(ex)
+        return response
+
+    extension = get_extension(downloaded_path)[1:]  # leave off the starting . in the extension
+    mimetype = f"{'video' if include_video else 'audio'}/{extension}"
+
     #response.headers['Access-Control-Allow-Origin'] = '*'
     return send_file(
         as_attachment=True,
-        path_or_file=downloaded,
+        path_or_file=downloaded_path,
         download_name=filename,
-        mimetype='video/mp4' # TODO might actually be webm
+        mimetype=mimetype
     )
 
 
