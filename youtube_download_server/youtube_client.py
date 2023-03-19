@@ -1,14 +1,26 @@
 import glob
+from pathlib import Path
 import platform
 import uuid
+from zipfile import ZipFile
+
 from yt_dlp import YoutubeDL
 
 
-temp_folder = "C:\\Users\\james\\AppData\\Local\\Temp\\" if platform.system() is 'Windows' else "/tmp/"
+temp_dir = "C:\\Users\\james\\AppData\\Local\\Temp\\" if platform.system() is 'Windows' else "/tmp/"
+
+
+def get_filename(absolute_path):
+    return Path(absolute_path).name
 
 
 def youtube_url(video_id):
     return f"https://youtube.com/watch?v={video_id}"
+
+
+def sections_to_download_ranges(sections):
+    return [{'start_time': s['start'], 'end_time': s['end'], 'title': s['name']}
+            for s in sections]
 
 
 def get_meta(video_id):
@@ -21,22 +33,37 @@ def get_meta(video_id):
                              for c in info['chapters']]}
 
 
-def find_file(filename):
-    return glob.glob(f"C:\\Users\\james\\AppData\\Local\\Temp\\{filename}.*")[0]
+def find_files(filename):
+    return glob.glob(f"{temp_dir}{filename}*")
 
 
 def download(video_id, sections, include_video):
-    format_str = 'best' if include_video else 'bestaudio'
-    file_id = uuid.uuid4()
     ytdl_params = {
-        'format': format_str,
-        'outtmpl': f"{temp_folder}{file_id}.%(ext)s",
-        'verbose': True
-        # 'download_ranges': sections_filter
+        'format': 'best' if include_video else 'bestaudio'
     }
+    sections_provided = sections is not None
+    file_id = uuid.uuid4()
+    if sections_provided:
+        ytdl_params['outtmpl'] = f"{temp_dir}{file_id}_%(section_start)s_%(section_end)s.%(ext)s"
+        ytdl_params['download_ranges'] = (lambda _1, _2: sections_to_download_ranges(sections))
+    else:
+        ytdl_params['outtmpl'] = f"{temp_dir}{file_id}.%(ext)s"
     with YoutubeDL(ytdl_params) as ytdl:
         error = ytdl.download([youtube_url(video_id)])
-        return find_file(file_id)
+        if sections_provided:
+            filenames = find_files(file_id)
+            zip_filename = f"{temp_dir}files.zip"
+            with ZipFile(zip_filename, 'w') as zip_file:
+                for f in filenames:
+                    zip_file.write(f, arcname=get_filename(f))
+            return {
+                'main_filename': zip_filename,
+                'downloaded_files': filenames
+            }
+        else:
+            return {
+                'main_filename': find_files(file_id)[0]
+            }
 
 
 # get_meta('1pi9t3dnAXs')
