@@ -2,6 +2,7 @@ import glob
 from models import Section
 from pathlib import Path
 import platform
+from pydantic import BaseModel
 from typing import List
 import uuid
 from zipfile import ZipFile
@@ -38,7 +39,12 @@ def find_files(filename):
     return glob.glob(f"{temp_dir}{filename}*")
 
 
-def download(video_id: str, sections: List[Section], include_video: bool):
+class DownloadResult(BaseModel):
+    main_filename: str
+    downloaded_files: List[str] = []
+
+
+def download(video_id: str, sections: List[Section], include_video: bool) -> DownloadResult:
     ytdl_params = {
         'format': 'best' if include_video else 'bestaudio'
     }
@@ -57,15 +63,9 @@ def download(video_id: str, sections: List[Section], include_video: bool):
             with ZipFile(zip_filename, 'w') as zip_file:
                 for f in filenames:
                     zip_file.write(f, arcname=get_filename(f))
-            # TODO define return type as class
-            return {
-                'main_filename': zip_filename,
-                'downloaded_files': filenames
-            }
+            return DownloadResult(main_filename=zip_filename, filenames=filenames)
         else:
-            return {
-                'main_filename': find_files(file_id)[0]
-            }
+            return DownloadResult(main_filename=find_files(file_id)[0])
 
 
 # get_meta('1pi9t3dnAXs')

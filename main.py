@@ -45,16 +45,14 @@ def download_video_by_id(request: DownloadRequest, background_tasks: BackgroundT
     # Download video
     print(f"request: {request}")
     download_result = download(request.video_id, request.sections, request.include_video)
-    main_filename = download_result['main_filename']
-    downloaded_files = download_result.get('downloaded_files', [])
     # Cleanup downloaded files
-    background_tasks.add_task(try_delete_files, [main_filename] + downloaded_files)
-    extension = get_extension(main_filename)[1:]  # leave off the starting . in the extension
+    background_tasks.add_task(try_delete_files, [download_result.main_filename] + download_result.downloaded_files)
+    extension = get_extension(download_result.main_filename)[1:]  # leave off the starting . in the extension
     mimetype =\
         "application/zip" if len(request.sections) > 0\
         else f"{'video' if request.include_video else 'audio'}/{extension}"
 
     download_name = f"{request.filename}.{extension}"
-    return FileResponse(path=main_filename, filename=download_name, media_type=mimetype)
+    return FileResponse(path=download_result.main_filename, filename=download_name, media_type=mimetype)
 
 
