@@ -1,6 +1,8 @@
 import glob
+from models import Section
 from pathlib import Path
 import platform
+from typing import List
 import uuid
 from zipfile import ZipFile
 
@@ -19,14 +21,13 @@ def youtube_url(video_id):
 
 
 def sections_to_download_ranges(sections):
-    return [{'start_time': s['start'], 'end_time': s['end'], 'title': s['name']}
+    return [{'start_time': s.start, 'end_time': s.end, 'title': s.name}
             for s in sections]
 
 
 def get_meta(video_id):
     with YoutubeDL() as ydl:
         info = ydl.extract_info(youtube_url(video_id), download=False)
-        print("info: " + str(info))
         return {'title': info['title'],
                 'length': info['duration'],
                 'sections': [{'start': c['start_time'], 'end': c['end_time'], 'name': c['title']}
@@ -37,11 +38,11 @@ def find_files(filename):
     return glob.glob(f"{temp_dir}{filename}*")
 
 
-def download(video_id, sections, include_video):
+def download(video_id: str, sections: List[Section], include_video: bool):
     ytdl_params = {
         'format': 'best' if include_video else 'bestaudio'
     }
-    sections_provided = sections is not None
+    sections_provided = len(sections) > 0
     file_id = uuid.uuid4()
     if sections_provided:
         ytdl_params['outtmpl'] = f"{temp_dir}{file_id}_%(section_start)s_%(section_end)s.%(ext)s"
@@ -56,6 +57,7 @@ def download(video_id, sections, include_video):
             with ZipFile(zip_filename, 'w') as zip_file:
                 for f in filenames:
                     zip_file.write(f, arcname=get_filename(f))
+            # TODO define return type as class
             return {
                 'main_filename': zip_filename,
                 'downloaded_files': filenames
