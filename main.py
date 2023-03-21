@@ -1,11 +1,11 @@
 from fastapi import BackgroundTasks, FastAPI
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from models import Section
 import os
 from pydantic import BaseModel
 from typing import List
 from youtube_client import download, get_meta
-
 
 app = FastAPI()
 
@@ -56,3 +56,6 @@ def download_video_by_id(request: DownloadRequest, background_tasks: BackgroundT
     return FileResponse(path=download_result.main_filename, filename=download_name, media_type=mimetype)
 
 
+# This has to be after route definitions or apparently it overrides
+# the other routes and makes them 404
+app.mount("/", StaticFiles(directory="frontend/build", html=True), name="static")
