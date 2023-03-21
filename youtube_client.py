@@ -48,16 +48,15 @@ def download(video_id: str, sections: List[Section], include_video: bool) -> Dow
     ytdl_params = {
         'format': 'best' if include_video else 'bestaudio'
     }
-    sections_provided = len(sections) > 0
     file_id = uuid.uuid4()
-    if sections_provided:
+    if len(sections) > 0:
         ytdl_params['outtmpl'] = f"{temp_dir}{file_id}_%(section_start)s_%(section_end)s.%(ext)s"
         ytdl_params['download_ranges'] = (lambda _1, _2: sections_to_download_ranges(sections))
     else:
         ytdl_params['outtmpl'] = f"{temp_dir}{file_id}.%(ext)s"
     with YoutubeDL(ytdl_params) as ytdl:
         error = ytdl.download([youtube_url(video_id)])
-        if sections_provided:
+        if len(sections) > 1:
             filenames = find_files(file_id)
             zip_filename = f"{temp_dir}files.zip"
             with ZipFile(zip_filename, 'w') as zip_file:
