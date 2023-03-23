@@ -32,7 +32,7 @@ def get_meta(video_id):
         return {'title': info['title'],
                 'length': info['duration'],
                 'sections': [{'start': c['start_time'], 'end': c['end_time'], 'name': c['title']}
-                             for c in info['chapters']]}
+                             for c in (info['chapters'] or [])]}
 
 
 def find_files(filename):
