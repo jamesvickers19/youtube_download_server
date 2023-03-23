@@ -10,7 +10,7 @@ from zipfile import ZipFile
 from yt_dlp import YoutubeDL
 
 
-temp_dir = "C:\\Users\\james\\AppData\\Local\\Temp\\" if platform.system() is 'Windows' else "/tmp/"
+temp_dir = "C:\\Users\\james\\AppData\\Local\\Temp\\" if platform.system() == 'Windows' else "/tmp/"
 
 
 def get_filename(absolute_path):

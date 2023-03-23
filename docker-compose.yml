@@ -1,0 +1,29 @@
+# adapted from
+# https://pentacent.medium.com/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71
+
+version: "3.3"
+services:
+  server:
+    build: server
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./server/app/frontend:/app/frontend # TODO this right?
+  nginx:
+    image: nginx:alpine
+    # auto-renew certificate
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    ports:
+      - "80:80"
+      - "443:443"
+  certbot:
+    image: certbot/certbot
+    # auto-renew certificate
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
