@@ -1,4 +1,6 @@
 **/.idea/*
 **/__pycache__/*
 **/node_modules/*
-/server/app/frontend
+/server/app/static
+**/.eslintcache
+**/yarn.lock

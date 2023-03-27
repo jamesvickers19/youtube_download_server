@@ -62,4 +62,4 @@ def download_video_by_id(request: DownloadRequest, background_tasks: BackgroundT
 
 # This has to be after route definitions or apparently it overrides
 # the other routes and makes them 404
-app.mount("/", StaticFiles(directory="frontend/build", html=True), name="static")
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
