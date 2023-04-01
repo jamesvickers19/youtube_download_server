@@ -108,6 +108,7 @@ class StartForm extends React.Component {
       })
       .then((blob) => download(blob, attachmentName))
       .catch(error => {
+        console.log(`Error from download endpoint: ${error}`);
         errorMsg = 'Error, please try again';
       })
       .finally(() => {
@@ -139,6 +140,7 @@ class StartForm extends React.Component {
         }
       ))
       .catch(error => {
+        console.log(`Error from meta endpoint: ${error}`);
         errorMsg = 'Error, please try again';
       })
       .finally(() => {
@@ -156,7 +158,7 @@ class StartForm extends React.Component {
   }
 
   handleDownloadTimeRange(event) {
-    let filename = `${this.state.videoInfo.title}_custom_sections`;
+    let filename = `${this.state.videoInfo.title}_range`;
     this.downloadFromServer(
       filename,
       [
