@@ -42,7 +42,9 @@ class DownloadResult(BaseModel):
 
 def download(video_id: str, sections: List[Section], include_video: bool) -> DownloadResult:
     ytdl_params = {
-        'format': 'best' if include_video else 'bestaudio'
+        # for audio, prefer m4a or mp4 if available since mobile devices can play
+        # those but not e.g. webm
+        'format': 'best' if include_video else 'bestaudio[ext=m4a]/bestaudio[ext=mp3]/bestaudio'
     }
     file_id = uuid.uuid4()
     filename_prefix = f"{file_id}_"
