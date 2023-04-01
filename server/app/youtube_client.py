@@ -13,16 +13,12 @@ from yt_dlp import YoutubeDL
 temp_dir = "C:\\Users\\james\\AppData\\Local\\Temp\\" if platform.system() == 'Windows' else "/tmp/"
 
 
-def get_filename(absolute_path):
-    return Path(absolute_path).name
-
-
 def youtube_url(video_id):
     return f"https://youtube.com/watch?v={video_id}"
 
 
 def sections_to_download_ranges(sections):
-    return [{'start_time': s.start, 'end_time': s.end, 'title': s.name}
+    return [{'start_time': s.start, 'end_time': s.end, 'title': s.name.replace(' ', '_')}
             for s in sections]
 
 
@@ -49,8 +45,9 @@ def download(video_id: str, sections: List[Section], include_video: bool) -> Dow
         'format': 'best' if include_video else 'bestaudio'
     }
     file_id = uuid.uuid4()
+    filename_prefix = f"{file_id}_"
     if len(sections) > 0:
-        ytdl_params['outtmpl'] = f"{temp_dir}{file_id}_%(section_start)s_%(section_end)s.%(ext)s"
+        ytdl_params['outtmpl'] = temp_dir + filename_prefix + "%(section_title)s.%(ext)s"
         ytdl_params['download_ranges'] = (lambda _1, _2: sections_to_download_ranges(sections))
     else:
         ytdl_params['outtmpl'] = f"{temp_dir}{file_id}.%(ext)s"
@@ -61,10 +58,11 @@ def download(video_id: str, sections: List[Section], include_video: bool) -> Dow
             zip_filename = f"{temp_dir}files.zip"
             with ZipFile(zip_filename, 'w') as zip_file:
                 for f in filenames:
-                    zip_file.write(f, arcname=get_filename(f))
+                    path = Path(f)
+                    section_name = path.stem[len(filename_prefix):]
+                    zip_file.write(f, arcname=f"{section_name}{path.suffix}")
             return DownloadResult(main_filename=zip_filename, filenames=filenames)
-        else:
-            return DownloadResult(main_filename=find_files(file_id)[0])
+        return DownloadResult(main_filename=find_files(file_id)[0])
 
 
 # get_meta('1pi9t3dnAXs')
