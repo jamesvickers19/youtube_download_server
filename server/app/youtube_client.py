@@ -20,7 +20,7 @@ def youtube_url(video_id):
 
 def convert_vid_to_gif(input_filename, output_filename):
     clip = VideoFileClip(input_filename)
-    clip.write_gif(output_filename, fps=24)
+    clip.write_gif(output_filename, fps=10)
 
 
 def sections_to_download_ranges(sections):
