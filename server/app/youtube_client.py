@@ -1,5 +1,6 @@
 import glob
 from models import Section
+from moviepy.editor import VideoFileClip
 from pathlib import Path
 import platform
 from pydantic import BaseModel
@@ -15,6 +16,11 @@ temp_dir = "C:\\Users\\james\\AppData\\Local\\Temp\\" if platform.system() == 'W
 
 def youtube_url(video_id):
     return f"https://youtube.com/watch?v={video_id}"
+
+
+def convert_vid_to_gif(input_filename, output_filename):
+    clip = VideoFileClip(input_filename)
+    clip.write_gif(output_filename, fps=24)
 
 
 def sections_to_download_ranges(sections):
@@ -40,12 +46,13 @@ class DownloadResult(BaseModel):
     downloaded_files: List[str] = []
 
 
-def download(video_id: str, sections: List[Section], include_video: bool) -> DownloadResult:
+def download(video_id: str, sections: List[Section], media_type: str) -> DownloadResult:
     ytdl_params = {
         # for audio, prefer m4a or mp4 if available since mobile devices can play
         # those but not e.g. webm
-        'format': 'best' if include_video else 'bestaudio[ext=m4a]/bestaudio[ext=mp3]/bestaudio'
+        'format': 'bestaudio[ext=m4a]/bestaudio[ext=mp3]/bestaudio' if media_type == 'audio' else 'best'
     }
+    download_as_gif = media_type == 'gif'
     file_id = uuid.uuid4()
     filename_prefix = f"{file_id}_"
     if len(sections) > 0:
@@ -58,12 +65,26 @@ def download(video_id: str, sections: List[Section], include_video: bool) -> Dow
         if len(sections) > 1:
             filenames = find_files(file_id)
             zip_filename = f"{temp_dir}files.zip"
+            gif_files = []
             with ZipFile(zip_filename, 'w') as zip_file:
                 for f in filenames:
                     path = Path(f)
                     section_name = path.stem[len(filename_prefix):]
-                    zip_file.write(f, arcname=f"{section_name}{path.suffix}")
-            return DownloadResult(main_filename=zip_filename, filenames=filenames)
+                    if download_as_gif:
+                        gif_file = f"{temp_dir}{path.stem}.gif"
+                        gif_files.append(gif_file)
+                        convert_vid_to_gif(f, gif_file)
+                        zip_file.write(gif_file, arcname=f"{section_name}.gif")
+                    else:
+                        zip_file.write(f, arcname=f"{section_name}{path.suffix}")
+            return DownloadResult(main_filename=zip_filename, downloaded_files=filenames + gif_files)
+
+        downloaded = find_files(file_id)[0]
+        if download_as_gif:
+            path = Path(downloaded)
+            gif_file = f"{temp_dir}{path.stem}.gif"
+            convert_vid_to_gif(downloaded, gif_file)
+            return DownloadResult(main_filename=gif_file, downloaded_files=[downloaded])
         return DownloadResult(main_filename=find_files(file_id)[0])
 
 

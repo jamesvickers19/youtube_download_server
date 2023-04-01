@@ -36,20 +36,24 @@ def download_video_by_id_options():
 class DownloadRequest(BaseModel):
     video_id: str
     filename: str
-    include_video: bool = False
+    media_type: str
     sections: List[Section] = []
 
 
 @app.post('/download')
 def download_video_by_id(request: DownloadRequest, background_tasks: BackgroundTasks):
     # Download video
-    download_result = download(request.video_id, request.sections, request.include_video)
+    download_result = download(request.video_id, request.sections, request.media_type)
     # Cleanup downloaded files
     background_tasks.add_task(try_delete_files, [download_result.main_filename] + download_result.downloaded_files)
     extension = get_extension(download_result.main_filename)[1:]  # leave off the starting . in the extension
-    mimetype =\
-        "application/zip" if len(request.sections) > 0\
-        else f"{'video' if request.include_video else 'audio'}/{extension}"
+    mimetype = ''
+    if len(request.sections) > 0:
+        mimetype = "application/zip"
+    elif request.media_type == 'audio' or request.media_type == 'video':
+        mimetype = f"{request.media_type}/{extension}"
+    else:
+        mimetype = "image/gif"
 
     download_name = f"{request.filename.replace(' ', '_')}.{extension}"
     return FileResponse(path=download_result.main_filename, filename=download_name, media_type=mimetype)

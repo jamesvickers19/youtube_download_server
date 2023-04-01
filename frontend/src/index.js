@@ -60,7 +60,7 @@ class StartForm extends React.Component {
     this.state = {url: '', sections: []}; 
     this.handleVideoUrlInputChange = this.handleVideoUrlInputChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.onIncludeVideoChanged = this.onIncludeVideoChanged.bind(this);
+    this.onMediaTypeChanged = this.onMediaTypeChanged.bind(this);
     this.onTimeRangeChanged = this.onTimeRangeChanged.bind(this);
     this.handleDownloadEntireVideo = this.handleDownloadEntireVideo.bind(this);
     this.handleDownloadTimeRange = this.handleDownloadTimeRange.bind(this);
@@ -85,7 +85,7 @@ class StartForm extends React.Component {
   downloadFromServer(filename, sections) {
     let requestData = {
       'video_id': this.state.fetchedVideoId,
-      'include_video': this.state.includeVideo,
+      'media_type': this.state.mediaType || 'video',
       'filename': filename,
     };
     if (sections) {
@@ -186,9 +186,9 @@ class StartForm extends React.Component {
     this.setState({sections: sections});
   }
 
-  onIncludeVideoChanged(event) {
+  onMediaTypeChanged(event) {
     this.setState({
-      includeVideo: event.target.checked
+      mediaType: event.target.value
     });
   }
 
@@ -293,7 +293,7 @@ class StartForm extends React.Component {
       </button>));
     let videoTitleLabel = null;
     let downloadFullBtn = null;
-    let includeVideoCheckbox = null;
+    let mediaTypeSelector = null;
     let timeRangeInput = null;
     if (this.state.fetchedVideoId != null) {
       videoTitleLabel = (
@@ -312,14 +312,14 @@ class StartForm extends React.Component {
           Download full
         </button>
       );
-      includeVideoCheckbox = (
+      mediaTypeSelector = (
         <div>
-          <label>Include video (uncheck for just audio): </label>
-          <input
-            onChange={this.onIncludeVideoChanged}
-            type="checkbox"
-            checked={this.state.includeVideo}
-          />
+          <label>Download type:</label>
+          <select onChange={this.onMediaTypeChanged}>
+            <option value="video">Video</option>
+            <option value="audio">Audio</option>
+            <option value="gif">GIF</option>
+          </select>
         </div>
       );
       timeRangeInput = (
@@ -358,7 +358,7 @@ class StartForm extends React.Component {
           {errorLabel}
         </Cell>
         <Cell center>{videoTitleLabel}</Cell>
-        <Cell center>{includeVideoCheckbox}</Cell>
+        <Cell center>{mediaTypeSelector}</Cell>
         <Cell center>{downloadFullBtn}</Cell>
         <Cell center>{timeRangeInput}</Cell>
         <Cell center>{downloadSectionsBtn}</Cell>
