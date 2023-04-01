@@ -40,14 +40,9 @@ class DownloadRequest(BaseModel):
     sections: List[Section] = []
 
 
-def handle_spaces(filename):
-    return filename.replace(" ", "_")
-
-
 @app.post('/download')
 def download_video_by_id(request: DownloadRequest, background_tasks: BackgroundTasks):
     # Download video
-    print(f"request: {request}")
     download_result = download(request.video_id, request.sections, request.include_video)
     # Cleanup downloaded files
     background_tasks.add_task(try_delete_files, [download_result.main_filename] + download_result.downloaded_files)
@@ -56,7 +51,7 @@ def download_video_by_id(request: DownloadRequest, background_tasks: BackgroundT
         "application/zip" if len(request.sections) > 0\
         else f"{'video' if request.include_video else 'audio'}/{extension}"
 
-    download_name = f"{handle_spaces(request.filename)}.{extension}"
+    download_name = f"{request.filename.replace(' ', '_')}.{extension}"
     return FileResponse(path=download_result.main_filename, filename=download_name, media_type=mimetype)
 
 
