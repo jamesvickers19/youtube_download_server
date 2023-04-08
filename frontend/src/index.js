@@ -4,6 +4,7 @@ import './index.css';
 import { Grid, Cell } from "styled-css-grid";
 import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
 import Loader from "react-loader-spinner";
+import NumericInput from 'react-numeric-input';
 import VideoSection from './VideoSection'
 import TimeRange from './TimeRange'
 import reportWebVitals from './reportWebVitals';
@@ -64,6 +65,7 @@ class StartForm extends React.Component {
     this.onTimeRangeChanged = this.onTimeRangeChanged.bind(this);
     this.handleDownloadEntireVideo = this.handleDownloadEntireVideo.bind(this);
     this.handleDownloadTimeRange = this.handleDownloadTimeRange.bind(this);
+    this.handleRotationInputChange = this.handleRotationInputChange.bind(this);
     this.handleDownloadSections = this.handleDownloadSections.bind(this);
     this.onSectionSelectedChange = this.onSectionSelectedChange.bind(this);
     this.onSectionNameChange = this.onSectionNameChange.bind(this);
@@ -90,6 +92,9 @@ class StartForm extends React.Component {
     };
     if (sections) {
       requestData['sections'] = sections;
+    }
+    if (this.state.rotation) {
+      requestData['rotation'] = this.state.rotation;
     }
 
     let requestParams = postJsonRequestParams(requestData);
@@ -169,6 +174,10 @@ class StartForm extends React.Component {
         }
       ]
     );
+  }
+
+  handleRotationInputChange(rotation) {
+    this.setState({rotation: rotation});
   }
 
   handleDownloadSections(event) {
@@ -295,6 +304,7 @@ class StartForm extends React.Component {
     let downloadFullBtn = null;
     let mediaTypeSelector = null;
     let timeRangeInput = null;
+    let rotationInput = null;
     if (this.state.fetchedVideoId != null) {
       videoTitleLabel = (
       <div>
@@ -336,6 +346,17 @@ class StartForm extends React.Component {
           />
         </div>
       );
+      if (this.state.mediaType !== 'audio') {
+        rotationInput = (
+          <div>
+            <label>Rotation (degrees): </label>
+            <NumericInput min={-359}
+                          max={359}
+                          value={this.state.rotation}
+                          onChange={this.handleRotationInputChange}/>
+          </div>
+        );
+      }
     }
     return (
     <form>
@@ -362,6 +383,7 @@ class StartForm extends React.Component {
         <Cell center>{downloadFullBtn}</Cell>
         <Cell center>{timeRangeInput}</Cell>
         <Cell center>{downloadSectionsBtn}</Cell>
+        <Cell center>{rotationInput}</Cell>
         <Cell center>
           {selectAllInput}
           {selectAllInputLabel}
