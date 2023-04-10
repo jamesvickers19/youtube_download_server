@@ -38,13 +38,20 @@ class DownloadRequest(BaseModel):
     filename: str
     media_type: str
     sections: List[Section] = []
+    reflection: str = None
     rotation: int = None
 
 
 @app.post('/download')
 def download_video_by_id(request: DownloadRequest, background_tasks: BackgroundTasks):
     # Download video
-    download_result = download(request.video_id, request.sections, request.media_type, request.rotation)
+    download_result = download(
+        video_id=request.video_id,
+        sections=request.sections,
+        media_type=request.media_type,
+        rotation=request.rotation,
+        mirror_horizontal=request.reflection == 'horizontal',
+        mirror_vertical=request.reflection == 'vertical')
     # Cleanup downloaded files
     background_tasks.add_task(try_delete_files, [download_result.main_filename] + download_result.downloaded_files)
     extension = get_extension(download_result.main_filename)[1:]  # leave off the starting . in the extension

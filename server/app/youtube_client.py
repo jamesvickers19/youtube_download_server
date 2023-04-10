@@ -1,6 +1,6 @@
 import glob
 from models import Section
-from moviepy.editor import VideoFileClip
+from moviepy.editor import vfx, VideoFileClip
 from pathlib import Path
 import platform
 from pydantic import BaseModel
@@ -27,10 +27,16 @@ def convert_vid_to_gif(input_filename):
 
 
 # positive numbers counterclockwise, negative numbers clockwise.
-def rotate_video(degrees, input_filename):
-    clip = VideoFileClip(input_filename).rotate(degrees)
+def orient_video(input_filename, degrees, mirror_horizontal, mirror_vertical):
+    clip = VideoFileClip(input_filename)
+    if degrees is not None:
+        clip = clip.rotate(degrees)
+    if mirror_horizontal:
+        clip = clip.fx(vfx.mirror_x)
+    if mirror_vertical:
+        clip = clip.fx(vfx.mirror_y)
     path = Path(input_filename)
-    output_filename = f"{temp_dir}{path.stem}_rotated{path.suffix}"
+    output_filename = f"{temp_dir}{path.stem}_oriented{path.suffix}"
     clip.write_videofile(output_filename)
     return output_filename
 
@@ -61,7 +67,9 @@ class DownloadResult(BaseModel):
 def download(video_id: str,
              sections: List[Section],
              media_type: str,
-             rotation = None) -> DownloadResult:
+             rotation: int = None,
+             mirror_horizontal: bool = None,
+             mirror_vertical: bool = None) -> DownloadResult:
     ytdl_params = {
         # for audio, prefer m4a or mp4 if available since mobile devices can play
         # those but not e.g. webm
@@ -69,6 +77,7 @@ def download(video_id: str,
     }
     download_as_gif = media_type == 'gif'
     visual_format = download_as_gif or media_type == 'video'
+    orientation_required = visual_format and rotation is not None or mirror_horizontal is not None or mirror_vertical is not None
     file_id = uuid.uuid4()
     filename_prefix = f"{file_id}_"
     if len(sections) > 0:
@@ -85,8 +94,8 @@ def download(video_id: str,
                 downloaded_files = filenames.copy()
                 for f in filenames:
                     written_filename = f
-                    if visual_format and rotation is not None:
-                        written_filename = rotate_video(rotation, f)
+                    if orientation_required:
+                        written_filename = orient_video(f, rotation, mirror_horizontal, mirror_vertical)
                         downloaded_files.append(written_filename)
                     if download_as_gif:
                         written_filename = convert_vid_to_gif(written_filename)
@@ -97,9 +106,9 @@ def download(video_id: str,
 
         main_filename = find_files(file_id)[0]
         downloaded_files = []
-        if visual_format and rotation is not None:
+        if orientation_required:
             downloaded_files.append(main_filename)
-            main_filename = rotate_video(rotation, main_filename)
+            main_filename = orient_video(main_filename, rotation, mirror_horizontal, mirror_vertical)
         if download_as_gif:
             downloaded_files.append(main_filename)
             main_filename = convert_vid_to_gif(main_filename)

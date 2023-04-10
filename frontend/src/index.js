@@ -65,6 +65,7 @@ class StartForm extends React.Component {
     this.onTimeRangeChanged = this.onTimeRangeChanged.bind(this);
     this.handleDownloadEntireVideo = this.handleDownloadEntireVideo.bind(this);
     this.handleDownloadTimeRange = this.handleDownloadTimeRange.bind(this);
+    this.handleReflectionInputChange = this.handleReflectionInputChange.bind(this);
     this.handleRotationInputChange = this.handleRotationInputChange.bind(this);
     this.handleDownloadSections = this.handleDownloadSections.bind(this);
     this.onSectionSelectedChange = this.onSectionSelectedChange.bind(this);
@@ -95,6 +96,9 @@ class StartForm extends React.Component {
     }
     if (this.state.rotation) {
       requestData['rotation'] = this.state.rotation;
+    }
+    if (this.state.reflection !== 'none') {
+      requestData['reflection'] = this.state.reflection;
     }
 
     let requestParams = postJsonRequestParams(requestData);
@@ -178,6 +182,10 @@ class StartForm extends React.Component {
 
   handleRotationInputChange(rotation) {
     this.setState({rotation: rotation});
+  }
+
+  handleReflectionInputChange(event) {
+    this.setState({reflection: event.target.value});
   }
 
   handleDownloadSections(event) {
@@ -305,6 +313,7 @@ class StartForm extends React.Component {
     let mediaTypeSelector = null;
     let timeRangeInput = null;
     let rotationInput = null;
+    let reflectionInput = null;
     if (this.state.fetchedVideoId != null) {
       videoTitleLabel = (
       <div>
@@ -349,11 +358,21 @@ class StartForm extends React.Component {
       if (this.state.mediaType !== 'audio') {
         rotationInput = (
           <div>
-            <label>Rotation (degrees): </label>
+            <label>Rotate video (degrees): </label>
             <NumericInput min={-359}
                           max={359}
                           value={this.state.rotation}
                           onChange={this.handleRotationInputChange}/>
+          </div>
+        );
+        reflectionInput = (
+          <div>
+            <label>Reflect video: </label>
+            <select onChange={this.handleReflectionInputChange}>
+              <option value="none">None</option>
+              <option value="horizontal">Horizontal</option>
+              <option value="vertical">Vertical</option>
+            </select>
           </div>
         );
       }
@@ -384,6 +403,7 @@ class StartForm extends React.Component {
         <Cell center>{timeRangeInput}</Cell>
         <Cell center>{downloadSectionsBtn}</Cell>
         <Cell center>{rotationInput}</Cell>
+        <Cell center>{reflectionInput}</Cell>
         <Cell center>
           {selectAllInput}
           {selectAllInputLabel}
