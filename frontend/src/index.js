@@ -140,6 +140,7 @@ class StartForm extends React.Component {
       .then(data => this.setState({
           videoInfo: {
             title: data.title,
+            thumbnailUrl: data.thumbnail_url,
             start: 0,
             end: data.length,
             selected: true
@@ -309,6 +310,7 @@ class StartForm extends React.Component {
           Download selected sections
       </button>));
     let videoTitleLabel = null;
+    let thumbnailDisplay = null;
     let downloadFullBtn = null;
     let mediaTypeSelector = null;
     let timeRangeInput = null;
@@ -322,6 +324,13 @@ class StartForm extends React.Component {
           {this.state.videoInfo.title}
         </label>
       </div>
+      );
+      thumbnailDisplay = (
+        <img
+            src={this.state.videoInfo.thumbnailUrl}
+            width="400" height="225"
+            alt=""
+        />
       );
       downloadFullBtn = (
         <button
@@ -398,6 +407,7 @@ class StartForm extends React.Component {
           {errorLabel}
         </Cell>
         <Cell center>{videoTitleLabel}</Cell>
+        <Cell center>{thumbnailDisplay}</Cell>
         <Cell center>{mediaTypeSelector}</Cell>
         <Cell center>{downloadFullBtn}</Cell>
         <Cell center>{timeRangeInput}</Cell>
