@@ -50,7 +50,6 @@ def get_meta(video_id):
     with YoutubeDL() as ydl:
         info = ydl.extract_info(youtube_url(video_id), download=False)
         return {'title': info['title'],
-                'thumbnail_url': info['thumbnail'],
                 'length': info['duration'],
                 'sections': [{'start': c['start_time'], 'end': c['end_time'], 'name': c['title']}
                              for c in (info['chapters'] or [])]}
