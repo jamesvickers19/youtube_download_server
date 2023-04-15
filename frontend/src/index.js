@@ -4,9 +4,10 @@ import './index.css';
 import { Grid, Cell } from "styled-css-grid";
 import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
 import Loader from "react-loader-spinner";
-import NumericInput from 'react-numeric-input';
+//import NumericInput from 'react-numeric-input';
 import VideoSection from './VideoSection'
 import TimeRange from './TimeRange'
+import YouTube from 'react-youtube';
 import reportWebVitals from './reportWebVitals';
 
 // If you want to start measuring performance in your app, pass a function
@@ -140,7 +141,6 @@ class StartForm extends React.Component {
       .then(data => this.setState({
           videoInfo: {
             title: data.title,
-            thumbnailUrl: data.thumbnail_url,
             start: 0,
             end: data.length,
             selected: true
@@ -310,11 +310,11 @@ class StartForm extends React.Component {
           Download selected sections
       </button>));
     let videoTitleLabel = null;
-    let thumbnailDisplay = null;
+    let videoDisplay = null;
     let downloadFullBtn = null;
     let mediaTypeSelector = null;
     let timeRangeInput = null;
-    let rotationInput = null;
+    //let rotationInput = null;
     let reflectionInput = null;
     if (this.state.fetchedVideoId != null) {
       videoTitleLabel = (
@@ -325,12 +325,36 @@ class StartForm extends React.Component {
         </label>
       </div>
       );
-      thumbnailDisplay = (
-        <img
-            src={this.state.videoInfo.thumbnailUrl}
-            width="400" height="225"
-            alt=""
-        />
+      let orientationTransformStyle = () => {
+        let horizontalTransform = this.state.reflection === "horizontal" ? "scaleX(-1)" : "";
+        let verticalTransform = this.state.reflection === "vertical" ? "scaleY(-1)" : "";
+        let rotationTransform = `rotate(${this.state.rotation || 0}deg)`;
+        if (!this.state.rotation &&
+           (horizontalTransform.length > 0 || verticalTransform.length > 0)) {
+          // for some reason the video plays as back on just horizontal/vertical
+          // transform but will play if there is any small rotation so set that here.
+          rotationTransform = 'rotate(0.1deg)'
+        }
+        return `${horizontalTransform} ${verticalTransform} ${rotationTransform}`;
+      };
+      let ytDisplayOpts = {
+        height: '390',
+        width: '640',
+        playerVars: {
+          // https://developers.google.com/youtube/player_parameters
+          start: this.state.downloadTimeStart,
+          end: this.state.downloadTimeEnd,
+          // can hide controls with controls: 0
+        },
+      };
+      videoDisplay = (
+        <div>
+          <label>Preview: </label>
+          <YouTube
+            videoId={this.state.fetchedVideoId}
+            opts={ytDisplayOpts}
+            style={{transform: orientationTransformStyle()}} />
+        </div>
       );
       downloadFullBtn = (
         <button
@@ -365,7 +389,7 @@ class StartForm extends React.Component {
         </div>
       );
       if (this.state.mediaType !== 'audio') {
-        rotationInput = (
+        /*rotationInput = (
           <div>
             <label>Rotate video (degrees): </label>
             <NumericInput min={-359}
@@ -374,6 +398,7 @@ class StartForm extends React.Component {
                           onChange={this.handleRotationInputChange}/>
           </div>
         );
+        */
         reflectionInput = (
           <div>
             <label>Reflect video: </label>
@@ -386,6 +411,7 @@ class StartForm extends React.Component {
         );
       }
     }
+    // <Cell center>{rotationInput}</Cell>
     return (
     <form>
       <Grid columns={"1fr"} rows={"1fr"}>
@@ -407,12 +433,11 @@ class StartForm extends React.Component {
           {errorLabel}
         </Cell>
         <Cell center>{videoTitleLabel}</Cell>
-        <Cell center>{thumbnailDisplay}</Cell>
+        <Cell center>{videoDisplay}</Cell>
         <Cell center>{mediaTypeSelector}</Cell>
         <Cell center>{downloadFullBtn}</Cell>
         <Cell center>{timeRangeInput}</Cell>
         <Cell center>{downloadSectionsBtn}</Cell>
-        <Cell center>{rotationInput}</Cell>
         <Cell center>{reflectionInput}</Cell>
         <Cell center>
           {selectAllInput}
