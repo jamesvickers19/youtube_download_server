@@ -399,7 +399,7 @@ class StartForm extends React.Component {
         rotationInput = (
           <div>
             <label>Rotate video (degrees): </label>
-            <NumericInput min={-359}
+            <NumericInput min={0}
                           max={359}
                           value={this.state.rotation}
                           onChange={this.handleRotationInputChange}/>
