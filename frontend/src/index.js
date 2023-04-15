@@ -4,7 +4,6 @@ import './index.css';
 import { Grid, Cell } from "styled-css-grid";
 import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
 import Loader from "react-loader-spinner";
-import NumericInput from 'react-numeric-input';
 import VideoSection from './VideoSection'
 import TimeRange from './TimeRange'
 import YouTube from 'react-youtube';
@@ -67,7 +66,6 @@ class StartForm extends React.Component {
     this.handleDownloadEntireVideo = this.handleDownloadEntireVideo.bind(this);
     this.handleDownloadTimeRange = this.handleDownloadTimeRange.bind(this);
     this.handleReflectionInputChange = this.handleReflectionInputChange.bind(this);
-    this.handleRotationInputChange = this.handleRotationInputChange.bind(this);
     this.handleDownloadSections = this.handleDownloadSections.bind(this);
     this.onSectionSelectedChange = this.onSectionSelectedChange.bind(this);
     this.onSectionNameChange = this.onSectionNameChange.bind(this);
@@ -94,9 +92,6 @@ class StartForm extends React.Component {
     };
     if (sections) {
       requestData['sections'] = sections;
-    }
-    if (this.state.rotation) {
-      requestData['rotation'] = this.state.rotation;
     }
     if (this.state.reflection !== 'none') {
       requestData['reflection'] = this.state.reflection;
@@ -179,10 +174,6 @@ class StartForm extends React.Component {
         }
       ]
     );
-  }
-
-  handleRotationInputChange(rotation) {
-    this.setState({rotation: rotation});
   }
 
   handleReflectionInputChange(event) {
@@ -314,7 +305,6 @@ class StartForm extends React.Component {
     let downloadFullBtn = null;
     let mediaTypeSelector = null;
     let timeRangeInput = null;
-    let rotationInput = null;
     let reflectionInput = null;
     if (this.state.fetchedVideoId != null) {
       videoTitleLabel = (
@@ -328,18 +318,11 @@ class StartForm extends React.Component {
       let orientationTransformStyle = () => {
         let horizontalTransform = this.state.reflection === "horizontal" ? "scaleX(-1)" : "";
         let verticalTransform = this.state.reflection === "vertical" ? "scaleY(-1)" : "";
-        let rotationTransform = `rotate(${this.state.rotation || 0}deg)`;
-        if (!this.state.rotation &&
-           (horizontalTransform.length > 0 || verticalTransform.length > 0)) {
-          // for some reason the video plays as back on just horizontal/vertical
-          // transform but will play if there is any small rotation so set that here.
-          rotationTransform = 'rotate(0.1deg)'
-        }
-        return `${horizontalTransform} ${verticalTransform} ${rotationTransform}`;
+        return `${horizontalTransform} ${verticalTransform}`;
       };
       let ytDisplayOpts = {
-        height: '390',
-        width: '640',
+        height: '225',
+        width: '400',
         playerVars: {
           // https://developers.google.com/youtube/player_parameters
           start: this.state.downloadTimeStart,
@@ -347,20 +330,12 @@ class StartForm extends React.Component {
           // can hide controls with controls: 0
         },
       };
-      // up margin as rotating to avoid covering other elements,
-      // but only up to 7% which is most needed.
-      let rotationMargin = () => this.state.rotation
-        ? Math.min(this.state.rotation * 0.2, 7)
-        : 0;
       videoDisplay = (
         <div>
           <YouTube
             videoId={this.state.fetchedVideoId}
             opts={ytDisplayOpts}
-            style={{
-              marginTop: `${rotationMargin()}%`,
-              marginBottom: `${rotationMargin()}%`,
-              transform: orientationTransformStyle(),}} />
+            style={{transform: orientationTransformStyle(),}} />
         </div>
       );
       downloadFullBtn = (
@@ -396,15 +371,6 @@ class StartForm extends React.Component {
         </div>
       );
       if (this.state.mediaType !== 'audio') {
-        rotationInput = (
-          <div>
-            <label>Rotate video (degrees): </label>
-            <NumericInput min={0}
-                          max={359}
-                          value={this.state.rotation}
-                          onChange={this.handleRotationInputChange}/>
-          </div>
-        );
         reflectionInput = (
           <div>
             <label>Reflect video: </label>
@@ -444,7 +410,6 @@ class StartForm extends React.Component {
         <Cell center>{timeRangeInput}</Cell>
         <Cell center>{downloadSectionsBtn}</Cell>
         <Cell center>{reflectionInput}</Cell>
-        <Cell center>{rotationInput}</Cell>
         <Cell center>
           {selectAllInput}
           {selectAllInputLabel}
