@@ -4,7 +4,7 @@ import './index.css';
 import { Grid, Cell } from "styled-css-grid";
 import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
 import Loader from "react-loader-spinner";
-//import NumericInput from 'react-numeric-input';
+import NumericInput from 'react-numeric-input';
 import VideoSection from './VideoSection'
 import TimeRange from './TimeRange'
 import YouTube from 'react-youtube';
@@ -314,7 +314,7 @@ class StartForm extends React.Component {
     let downloadFullBtn = null;
     let mediaTypeSelector = null;
     let timeRangeInput = null;
-    //let rotationInput = null;
+    let rotationInput = null;
     let reflectionInput = null;
     if (this.state.fetchedVideoId != null) {
       videoTitleLabel = (
@@ -347,13 +347,20 @@ class StartForm extends React.Component {
           // can hide controls with controls: 0
         },
       };
+      // up margin as rotating to avoid covering other elements,
+      // but only up to 7% which is most needed.
+      let rotationMargin = () => this.state.rotation
+        ? Math.min(this.state.rotation * 0.2, 7)
+        : 0;
       videoDisplay = (
         <div>
-          <label>Preview: </label>
           <YouTube
             videoId={this.state.fetchedVideoId}
             opts={ytDisplayOpts}
-            style={{transform: orientationTransformStyle()}} />
+            style={{
+              marginTop: `${rotationMargin()}%`,
+              marginBottom: `${rotationMargin()}%`,
+              transform: orientationTransformStyle(),}} />
         </div>
       );
       downloadFullBtn = (
@@ -389,7 +396,7 @@ class StartForm extends React.Component {
         </div>
       );
       if (this.state.mediaType !== 'audio') {
-        /*rotationInput = (
+        rotationInput = (
           <div>
             <label>Rotate video (degrees): </label>
             <NumericInput min={-359}
@@ -398,7 +405,6 @@ class StartForm extends React.Component {
                           onChange={this.handleRotationInputChange}/>
           </div>
         );
-        */
         reflectionInput = (
           <div>
             <label>Reflect video: </label>
@@ -411,7 +417,6 @@ class StartForm extends React.Component {
         );
       }
     }
-    // <Cell center>{rotationInput}</Cell>
     return (
     <form>
       <Grid columns={"1fr"} rows={"1fr"}>
@@ -439,6 +444,7 @@ class StartForm extends React.Component {
         <Cell center>{timeRangeInput}</Cell>
         <Cell center>{downloadSectionsBtn}</Cell>
         <Cell center>{reflectionInput}</Cell>
+        <Cell center>{rotationInput}</Cell>
         <Cell center>
           {selectAllInput}
           {selectAllInputLabel}
