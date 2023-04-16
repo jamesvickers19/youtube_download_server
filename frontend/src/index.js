@@ -4,8 +4,8 @@ import './index.css';
 import { Grid, Cell } from "styled-css-grid";
 import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
 import Loader from "react-loader-spinner";
+import TimePicker from './TimePicker'
 import VideoSection from './VideoSection'
-import TimeRange from './TimeRange'
 import YouTube from 'react-youtube';
 import reportWebVitals from './reportWebVitals';
 
@@ -62,7 +62,8 @@ class StartForm extends React.Component {
     this.handleVideoUrlInputChange = this.handleVideoUrlInputChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.onMediaTypeChanged = this.onMediaTypeChanged.bind(this);
-    this.onTimeRangeChanged = this.onTimeRangeChanged.bind(this);
+    this.onTimeRangeStartChanged = this.onTimeRangeStartChanged.bind(this);
+    this.onTimeRangeEndChanged = this.onTimeRangeEndChanged.bind(this);
     this.handleDownloadEntireVideo = this.handleDownloadEntireVideo.bind(this);
     this.handleDownloadTimeRange = this.handleDownloadTimeRange.bind(this);
     this.handleReflectionInputChange = this.handleReflectionInputChange.bind(this);
@@ -140,6 +141,8 @@ class StartForm extends React.Component {
             end: data.length,
             selected: true
           },
+          downloadTimeStart: 0,
+          downloadTimeEnd: data.length,
           sections: data.sections.map(t => ({ ...t, selected: true})),
           fetchedVideoId: fetchedVideoId
         }
@@ -201,10 +204,15 @@ class StartForm extends React.Component {
     });
   }
 
-  onTimeRangeChanged(start, end) {
+  onTimeRangeStartChanged(seconds) {
     this.setState({
-      downloadTimeStart: start,
-      downloadTimeEnd: end
+      downloadTimeStart: seconds,
+    });
+  }
+
+  onTimeRangeEndChanged(seconds) {
+    this.setState({
+      downloadTimeEnd: seconds,
     });
   }
 
@@ -362,11 +370,20 @@ class StartForm extends React.Component {
             type="button"
             disabled={this.state.downloading}
             onClick={this.handleDownloadTimeRange}>
-            Download time range (seconds):
+            Download time range:
           </button>
-          <TimeRange
-            max={this.state.videoInfo.end}
-            callback={this.onTimeRangeChanged}
+          <br/>
+          <label>Start time   </label>
+          <TimePicker
+            maxValueSeconds={this.state.downloadTimeEnd - 1}
+            initialValueSeconds={0}
+            callback={this.onTimeRangeStartChanged}
+          />
+          <label>End time    </label>
+          <TimePicker
+            maxValueSeconds={this.state.videoInfo.end}
+            initialValueSeconds={this.state.videoInfo.end}
+            callback={this.onTimeRangeEndChanged}
           />
         </div>
       );
