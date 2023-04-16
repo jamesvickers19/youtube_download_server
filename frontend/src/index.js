@@ -259,7 +259,7 @@ class StartForm extends React.Component {
             ? 'glowing 1300ms infinite'
             : 'none',
           // gray-out the button to make it clear when it's disabled 
-          'background-color': !this.state.videoId || this.state.downloading ? '#636965' : '#2ba805'
+          'backgroundColor': !this.state.videoId || this.state.downloading ? '#636965' : '#2ba805'
         }}
         onClick={this.handleSubmit}>
         Submit
