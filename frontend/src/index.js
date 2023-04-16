@@ -375,12 +375,14 @@ class StartForm extends React.Component {
           <br/>
           <label>Start time   </label>
           <TimePicker
+            minValueSeconds={0}
             maxValueSeconds={this.state.downloadTimeEnd - 1}
             initialValueSeconds={0}
             callback={this.onTimeRangeStartChanged}
           />
           <label>End time    </label>
           <TimePicker
+            minValueSeconds={this.state.downloadTimeStart + 1}
             maxValueSeconds={this.state.videoInfo.end}
             initialValueSeconds={this.state.videoInfo.end}
             callback={this.onTimeRangeEndChanged}

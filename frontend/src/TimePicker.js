@@ -56,23 +56,24 @@ class TimePicker extends React.Component {
     }
 
     render() {
-        let { hours, minutes, seconds } = toHoursMinutesSeconds(this.props.maxValueSeconds);
+        let minTime = toHoursMinutesSeconds(this.props.minValueSeconds || 0);
+        let maxTime = toHoursMinutesSeconds(this.props.maxValueSeconds);
         // don't make hours or minutes input if max time doesn't warrant them.  Seconds input always present or this control is useless.
         let hoursInput = null;
-        if (hours > 0) {
+        if (maxTime.hours > 0) {
           hoursInput = (
             <div>
               <input type="number"
-                min="0" max={hours} pattern= "[0-9]" step="1" value={this.state.hours} onChange={this.onHoursChanged} />
+                min={minTime.hours} max={maxTime.hours} pattern= "[0-9]" step="1" value={this.state.hours} onChange={this.onHoursChanged} />
               <label> h </label>
             </div>);
         }
         let minutesInput = null;
-        if (minutes > 0) {
+        if (maxTime.minutes > 0) {
           minutesInput = (
             <div>
               <input type="number"
-                min="0" max={minutes} pattern= "[0-9]" step="1" value={this.state.minutes} onChange={this.onMinutesChanged} />
+                min={minTime.minutes} max={maxTime.minutes} pattern= "[0-9]" step="1" value={this.state.minutes} onChange={this.onMinutesChanged} />
               <label> m </label>
             </div>);
         }
@@ -81,7 +82,7 @@ class TimePicker extends React.Component {
             {hoursInput}
             {minutesInput}
             <input type="number"
-              min="0" max={seconds} pattern= "[0-9]" step="1" value={this.state.seconds} onChange={this.onSecondsChanged} />
+              min={minTime.seconds} max={maxTime.seconds} pattern= "[0-9]" step="1" value={this.state.seconds} onChange={this.onSecondsChanged} />
             <label> s </label>
             </div>
         );
