@@ -10,12 +10,11 @@ from youtube_client import download, get_meta
 app = FastAPI()
 
 
-def try_delete_files(filenames):
-    for f in filenames:
-        try:
-            os.remove(f)
-        except Exception as ex:
-            print(ex)
+def try_delete_file(filename):
+    try:
+        os.remove(filename)
+    except Exception as ex:
+        print(ex)
 
 
 @app.get('/meta/{video_id}')
@@ -45,16 +44,16 @@ class DownloadRequest(BaseModel):
 @app.post('/download')
 def download_video_by_id(request: DownloadRequest, background_tasks: BackgroundTasks):
     # Download video
-    download_result = download(
+    downloaded_file = download(
         video_id=request.video_id,
         sections=request.sections,
         media_type=request.media_type,
         rotation=request.rotation,
         mirror_horizontal=request.reflection == 'horizontal',
         mirror_vertical=request.reflection == 'vertical')
-    # Cleanup downloaded files
-    background_tasks.add_task(try_delete_files, [download_result.main_filename] + download_result.downloaded_files)
-    extension = get_extension(download_result.main_filename)[1:]  # leave off the starting . in the extension
+    # Cleanup downloaded file after the request
+    background_tasks.add_task(try_delete_file, downloaded_file)
+    extension = get_extension(downloaded_file)[1:]  # leave off the starting . in the extension
     mimetype = ''
     if len(request.sections) > 0:
         mimetype = "application/zip"
@@ -64,7 +63,7 @@ def download_video_by_id(request: DownloadRequest, background_tasks: BackgroundT
         mimetype = "image/gif"
 
     download_name = f"{request.filename.replace(' ', '_')}.{extension}"
-    return FileResponse(path=download_result.main_filename, filename=download_name, media_type=mimetype)
+    return FileResponse(path=downloaded_file, filename=download_name, media_type=mimetype)
 
 
 # This has to be after route definitions or apparently it overrides

@@ -1,9 +1,9 @@
 import glob
 from models import Section
 from moviepy.editor import vfx, VideoFileClip
+import os
 from pathlib import Path
 import platform
-from pydantic import BaseModel
 from typing import List
 import uuid
 from zipfile import ZipFile
@@ -18,6 +18,13 @@ def youtube_url(video_id):
     return f"https://youtube.com/watch?v={video_id}"
 
 
+def try_delete_file(filename):
+    try:
+        os.remove(filename)
+    except Exception as ex:
+        print(ex)
+
+
 # degrees: positive numbers counterclockwise, negative numbers clockwise.
 def process_video(input_filename, as_gif, degrees, mirror_horizontal, mirror_vertical):
     clip = VideoFileClip(input_filename)
@@ -28,14 +35,15 @@ def process_video(input_filename, as_gif, degrees, mirror_horizontal, mirror_ver
     if mirror_vertical:
         clip = clip.fx(vfx.mirror_y)
     path = Path(input_filename)
+    output_filename = None
     if as_gif:
         output_filename = f"{temp_dir}{path.stem}.gif"
         clip.write_gif(output_filename, fps=10)
-        return output_filename
     else:
         output_filename = f"{temp_dir}{path.stem}_processed{path.suffix}"
         clip.write_videofile(output_filename)
-        return output_filename
+    try_delete_file(input_filename)
+    return output_filename
 
 
 def sections_to_download_ranges(sections):
@@ -56,17 +64,12 @@ def find_files(filename):
     return glob.glob(f"{temp_dir}{filename}*")
 
 
-class DownloadResult(BaseModel):
-    main_filename: str
-    downloaded_files: List[str] = []
-
-
 def download(video_id: str,
              sections: List[Section],
              media_type: str,
              rotation: int = None,
              mirror_horizontal: bool = None,
-             mirror_vertical: bool = None) -> DownloadResult:
+             mirror_vertical: bool = None) -> str:
     ytdl_params = {
         # for audio, prefer m4a or mp4 if available since mobile devices can play
         # those but not e.g. webm
@@ -88,22 +91,21 @@ def download(video_id: str,
             filenames = find_files(file_id)
             zip_filename = f"{temp_dir}files.zip"
             with ZipFile(zip_filename, 'w') as zip_file:
-                downloaded_files = filenames.copy()
+                processed_filenames = []
                 for f in filenames:
                     written_filename = f
                     if orientation_required or download_as_gif:
                         written_filename = process_video(f, download_as_gif, rotation, mirror_horizontal, mirror_vertical)
-                        downloaded_files.append(written_filename)
+                        processed_filenames.append(written_filename)
                     section_name = Path(f).stem[len(filename_prefix):]
                     zip_file.write(written_filename, arcname=f"{section_name}{Path(written_filename).suffix}")
-            return DownloadResult(main_filename=zip_filename, downloaded_files=downloaded_files)
+                    try_delete_file(written_filename)
+            return zip_filename
 
         main_filename = find_files(file_id)[0]
-        downloaded_files = []
         if orientation_required or download_as_gif:
-            downloaded_files.append(main_filename)
             main_filename = process_video(main_filename, download_as_gif, rotation, mirror_horizontal, mirror_vertical)
-        return DownloadResult(main_filename=main_filename, downloaded_files=downloaded_files)
+        return main_filename
 
 
 # get_meta('1pi9t3dnAXs')
