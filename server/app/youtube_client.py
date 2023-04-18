@@ -18,16 +18,8 @@ def youtube_url(video_id):
     return f"https://youtube.com/watch?v={video_id}"
 
 
-def convert_vid_to_gif(input_filename):
-    clip = VideoFileClip(input_filename)
-    path = Path(input_filename)
-    output_filename = f"{temp_dir}{path.stem}.gif"
-    clip.write_gif(output_filename, fps=10)
-    return output_filename
-
-
-# positive numbers counterclockwise, negative numbers clockwise.
-def orient_video(input_filename, degrees, mirror_horizontal, mirror_vertical):
+# degrees: positive numbers counterclockwise, negative numbers clockwise.
+def process_video(input_filename, as_gif, degrees, mirror_horizontal, mirror_vertical):
     clip = VideoFileClip(input_filename)
     if degrees is not None:
         clip = clip.rotate(degrees)
@@ -36,9 +28,14 @@ def orient_video(input_filename, degrees, mirror_horizontal, mirror_vertical):
     if mirror_vertical:
         clip = clip.fx(vfx.mirror_y)
     path = Path(input_filename)
-    output_filename = f"{temp_dir}{path.stem}_oriented{path.suffix}"
-    clip.write_videofile(output_filename)
-    return output_filename
+    if as_gif:
+        output_filename = f"{temp_dir}{path.stem}.gif"
+        clip.write_gif(output_filename, fps=10)
+        return output_filename
+    else:
+        output_filename = f"{temp_dir}{path.stem}_processed{path.suffix}"
+        clip.write_videofile(output_filename)
+        return output_filename
 
 
 def sections_to_download_ranges(sections):
@@ -94,11 +91,8 @@ def download(video_id: str,
                 downloaded_files = filenames.copy()
                 for f in filenames:
                     written_filename = f
-                    if orientation_required:
-                        written_filename = orient_video(f, rotation, mirror_horizontal, mirror_vertical)
-                        downloaded_files.append(written_filename)
-                    if download_as_gif:
-                        written_filename = convert_vid_to_gif(written_filename)
+                    if orientation_required or download_as_gif:
+                        written_filename = process_video(f, download_as_gif, rotation, mirror_horizontal, mirror_vertical)
                         downloaded_files.append(written_filename)
                     section_name = Path(f).stem[len(filename_prefix):]
                     zip_file.write(written_filename, arcname=f"{section_name}{Path(written_filename).suffix}")
@@ -106,12 +100,9 @@ def download(video_id: str,
 
         main_filename = find_files(file_id)[0]
         downloaded_files = []
-        if orientation_required:
+        if orientation_required or download_as_gif:
             downloaded_files.append(main_filename)
-            main_filename = orient_video(main_filename, rotation, mirror_horizontal, mirror_vertical)
-        if download_as_gif:
-            downloaded_files.append(main_filename)
-            main_filename = convert_vid_to_gif(main_filename)
+            main_filename = process_video(main_filename, download_as_gif, rotation, mirror_horizontal, mirror_vertical)
         return DownloadResult(main_filename=main_filename, downloaded_files=downloaded_files)
 
 
