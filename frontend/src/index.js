@@ -1,10 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import { Grid, Cell } from "styled-css-grid";
-import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
-import Loader from "react-loader-spinner";
-import TimePicker from './TimePicker'
+import { Col, Row } from 'antd';
+import { ThreeCircles } from "react-loader-spinner";
+import { Slider } from 'antd';
 import VideoSection from './VideoSection'
 import YouTube from 'react-youtube';
 import reportWebVitals from './reportWebVitals';
@@ -55,6 +54,20 @@ function postJsonRequestParams(requestData) {
   };
 }
 
+function toTimeString(totalSeconds) {
+  const totalMinutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  const formatTime = (v) => String(v).padStart(2, '0');
+  const minuteStr = formatTime(minutes);
+  const secondStr = formatTime(seconds);
+  if (hours > 0) {
+    return `${formatTime(hours)}:${minuteStr}:${secondStr}`;
+  }
+  return `${minuteStr}:${secondStr}`;
+}
+
 class StartForm extends React.Component {
   constructor(props) {
     super(props);
@@ -62,8 +75,7 @@ class StartForm extends React.Component {
     this.handleVideoUrlInputChange = this.handleVideoUrlInputChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.onMediaTypeChanged = this.onMediaTypeChanged.bind(this);
-    this.onTimeRangeStartChanged = this.onTimeRangeStartChanged.bind(this);
-    this.onTimeRangeEndChanged = this.onTimeRangeEndChanged.bind(this);
+    this.onTimeRangeChanged = this.onTimeRangeChanged.bind(this);
     this.handleDownloadEntireVideo = this.handleDownloadEntireVideo.bind(this);
     this.handleDownloadTimeRange = this.handleDownloadTimeRange.bind(this);
     this.handleReflectionInputChange = this.handleReflectionInputChange.bind(this);
@@ -72,7 +84,6 @@ class StartForm extends React.Component {
     this.onSectionNameChange = this.onSectionNameChange.bind(this);
     this.onAllSectionsSelectedChange = this.onAllSectionsSelectedChange.bind(this);
     this.nullIfNoSections = this.nullIfNoSections.bind(this);
-    this.downloadSpinner = this.downloadSpinner.bind(this);
     this.downloadFromServer = this.downloadFromServer.bind(this);
   }
 
@@ -204,16 +215,14 @@ class StartForm extends React.Component {
     });
   }
 
-  onTimeRangeStartChanged(seconds) {
-    this.setState({
-      downloadTimeStart: seconds,
-    });
-  }
-
-  onTimeRangeEndChanged(seconds) {
-    this.setState({
-      downloadTimeEnd: seconds,
-    });
+  onTimeRangeChanged(value) {
+    const [start, end] = value;
+    if (start < end) {
+      this.setState({
+        downloadTimeStart: start,
+        downloadTimeEnd: end
+      });
+    }
   }
 
   onSectionNameChange(event) {
@@ -233,17 +242,6 @@ class StartForm extends React.Component {
     return this.state.sections.length > 0
       ? element
       : null;
-  }
-
-  downloadSpinner() {
-    if (this.state.downloading) {
-      return (
-        <Loader
-          type="Watch"
-          color="#2ba805"
-          height={25}
-          width={25}/>);
-    }
   }
 
   render() {
@@ -312,6 +310,7 @@ class StartForm extends React.Component {
     let videoDisplay = null;
     let downloadFullBtn = null;
     let mediaTypeSelector = null;
+    let downloadTimeRangeBtn = null;
     let timeRangeInput = null;
     let reflectionInput = null;
     if (this.state.fetchedVideoId != null) {
@@ -328,9 +327,10 @@ class StartForm extends React.Component {
         let verticalTransform = this.state.reflection === "vertical" ? "scaleY(-1)" : "";
         return `${horizontalTransform} ${verticalTransform}`;
       };
+      const ytPreviewWidth = 400;
       let ytDisplayOpts = {
         height: '225',
-        width: '400',
+        width: ytPreviewWidth,
         playerVars: {
           // https://developers.google.com/youtube/player_parameters
           start: this.state.downloadTimeStart,
@@ -339,7 +339,7 @@ class StartForm extends React.Component {
         },
       };
       videoDisplay = (
-        <div>
+        <div style={{width: `${ytPreviewWidth}px`}}>
           <YouTube
             videoId={this.state.fetchedVideoId}
             opts={ytDisplayOpts}
@@ -364,30 +364,25 @@ class StartForm extends React.Component {
           </select>
         </div>
       );
-      timeRangeInput = (
-        <div>
-          <button
+      downloadTimeRangeBtn = (
+        <button
             type="button"
             disabled={this.state.downloading}
             onClick={this.handleDownloadTimeRange}>
-            Download time range:
+            Download time range
           </button>
-          <br/>
-          <label>Start time   </label>
-          <TimePicker
-            minValueSeconds={0}
-            maxValueSeconds={this.state.downloadTimeEnd - 1}
-            initialValueSeconds={0}
-            callback={this.onTimeRangeStartChanged}
+      );
+      timeRangeInput = (
+          <Slider range
+                id="timerange"
+                min={0}
+                max={this.state.videoInfo.end}
+                value={[this.state.downloadTimeStart, this.state.downloadTimeEnd]}
+                style={{ marginTop: 16, width: `${ytPreviewWidth}px` }}
+                step={1}
+                tooltip={{formatter: toTimeString, placement: "topRight"}}
+                onChange={this.onTimeRangeChanged}
           />
-          <label>End time    </label>
-          <TimePicker
-            minValueSeconds={this.state.downloadTimeStart + 1}
-            maxValueSeconds={this.state.videoInfo.end}
-            initialValueSeconds={this.state.videoInfo.end}
-            callback={this.onTimeRangeEndChanged}
-          />
-        </div>
       );
       if (this.state.mediaType !== 'audio') {
         reflectionInput = (
@@ -404,37 +399,51 @@ class StartForm extends React.Component {
     }
     return (
     <form>
-      <Grid columns={"1fr"} rows={"1fr"}>
-        <Cell center>
-          <h1 style={{fontSize: '50px', fontFamily: 'Garamond'}}>
-            Youtube Slicer
-          </h1>
-          <hr style={{margin: "0px 0px 20px 0px"}}/>
-        </Cell>
-        <Cell center>
+      <Row>
+        <Col span={24}>
           <label style={{fontSize: '30px'}}>Enter a YouTube link:</label>
-        </Cell>
-        <Cell center>{urlInput}</Cell>
-        <Cell center>{this.downloadSpinner()}</Cell>
-        <Cell center>
-          {submitBtn}
-        </Cell>
-        <Cell center>
-          {errorLabel}
-        </Cell>
-        <Cell center>{videoTitleLabel}</Cell>
-        <Cell center>{videoDisplay}</Cell>
-        <Cell center>{mediaTypeSelector}</Cell>
-        <Cell center>{downloadFullBtn}</Cell>
-        <Cell center>{timeRangeInput}</Cell>
-        <Cell center>{downloadSectionsBtn}</Cell>
-        <Cell center>{reflectionInput}</Cell>
-        <Cell center>
-          {selectAllInput}
-          {selectAllInputLabel}
-        </Cell>
-        <Cell center>{sectionsList}</Cell>
-      </Grid>
+        </Col>
+      </Row>
+      <Row>
+        <Col span={24}>{urlInput}</Col>
+      </Row>
+      <Row>
+        <Col span={24}>{this.state.downloading
+                          ? (<ThreeCircles
+                                height="25"
+                                width="25"
+                                color="#4fa94d"
+                                visible={true}/>)
+                          : submitBtn}
+        </Col>
+      </Row>
+      <Row>
+        <Col span={24}>{errorLabel}</Col>
+      </Row>
+      <Row>
+        <Col span={24}>{videoTitleLabel}</Col>
+      </Row>
+      <Row>
+        <Col span={24}>{videoDisplay}</Col>
+      </Row>
+      <Row>
+        <Col span={24}>{timeRangeInput}</Col>
+      </Row>
+      <Row>
+        <Col span={24}>{downloadTimeRangeBtn}</Col>
+      </Row>
+      <Row>
+        <Col span={24}>{downloadFullBtn}{mediaTypeSelector}{reflectionInput}</Col>
+      </Row>
+      <Row>
+        <Col span={24}>{downloadSectionsBtn}</Col>
+      </Row>
+      <Row>
+        <Col span={24}>{selectAllInput}{selectAllInputLabel}</Col>
+      </Row>
+      <Row>
+        <Col span={24}>{sectionsList}</Col>
+      </Row>
     </form>
     );
   }
