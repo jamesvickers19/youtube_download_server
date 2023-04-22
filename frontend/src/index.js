@@ -33,12 +33,10 @@ function download(blob, name) {
 
 function getVideoId(text) {
   const youtubeRegex = /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/;
-  if (!text.match(youtubeRegex))
-  {
+  if (!text.match(youtubeRegex)) {
     return null;
   }
-  if (!text.startsWith('http://') && !text.startsWith('https://'))
-  {
+  if (!text.startsWith('http://') && !text.startsWith('https://')) {
     text = 'https://' + text;
   }
   const url = new URL(text);
@@ -71,7 +69,7 @@ function toTimeString(totalSeconds) {
 class StartForm extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {url: '', sections: []}; 
+    this.state = { url: '', sections: [] };
     this.handleVideoUrlInputChange = this.handleVideoUrlInputChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.onMediaTypeChanged = this.onMediaTypeChanged.bind(this);
@@ -120,7 +118,7 @@ class StartForm extends React.Component {
       .then(response => {
         const header = response.headers.get('Content-Disposition');
         const parts = header.split(';');
-        attachmentName = parts[1].split('=')[1].replace(/"/g,"");
+        attachmentName = parts[1].split('=')[1].replace(/"/g, "");
         return response.blob();
       })
       .then((blob) => download(blob, attachmentName))
@@ -146,27 +144,27 @@ class StartForm extends React.Component {
     fetch(`${serverHost}meta/${fetchedVideoId}`)
       .then(response => response.json())
       .then(data => this.setState({
-          videoInfo: {
-            title: data.title,
-            start: 0,
-            end: data.length,
-            selected: true
-          },
-          downloadTimeStart: 0,
-          downloadTimeEnd: data.length,
-          sections: data.sections.map(t => ({ ...t, selected: true})),
-          fetchedVideoId: fetchedVideoId
-        }
+        videoInfo: {
+          title: data.title,
+          start: 0,
+          end: data.length,
+          selected: true
+        },
+        downloadTimeStart: 0,
+        downloadTimeEnd: data.length,
+        sections: data.sections.map(t => ({ ...t, selected: true })),
+        fetchedVideoId: fetchedVideoId
+      }
       ))
       .catch(error => {
         console.log(`Error from meta endpoint: ${error}`);
         errorMsg = 'Error, please try again';
       })
       .finally(() => {
-          this.setState({
-            downloading: false,
-            errorMessage: errorMsg,
-          });
+        this.setState({
+          downloading: false,
+          errorMessage: errorMsg,
+        });
       });
     event.preventDefault();
   }
@@ -191,7 +189,7 @@ class StartForm extends React.Component {
   }
 
   handleReflectionInputChange(event) {
-    this.setState({reflection: event.target.value});
+    this.setState({ reflection: event.target.value });
   }
 
   handleDownloadSections(event) {
@@ -206,7 +204,7 @@ class StartForm extends React.Component {
     let sections = this.state.sections;
     let index = event.target.getAttribute("index");
     sections[index].selected = event.target.checked;
-    this.setState({sections: sections});
+    this.setState({ sections: sections });
   }
 
   onMediaTypeChanged(event) {
@@ -229,15 +227,15 @@ class StartForm extends React.Component {
     let sections = this.state.sections;
     let index = event.target.getAttribute("index");
     sections[index].name = event.target.value;
-    this.setState({sections: sections});
+    this.setState({ sections: sections });
   }
-  
+
   onAllSectionsSelectedChange(event) {
     let sections = this.state.sections;
     sections.forEach(t => t.selected = event.target.checked);
-    this.setState({sections: sections});
+    this.setState({ sections: sections });
   }
-  
+
   nullIfNoSections(element) {
     return this.state.sections.length > 0
       ? element
@@ -245,9 +243,9 @@ class StartForm extends React.Component {
   }
 
   render() {
-    let urlInput = (<input id="urlInput" type="text" onChange={this.handleVideoUrlInputChange}/>);
+    let urlInput = (<input id="urlInput" type="text" onChange={this.handleVideoUrlInputChange} />);
     let submitBtn = (
-    <button
+      <button
         id="submitBtn"
         type="submit"
         disabled={!this.state.videoId || this.state.downloading}
@@ -261,15 +259,15 @@ class StartForm extends React.Component {
         }}
         onClick={this.handleSubmit}>
         Submit
-    </button>);
+      </button>);
     let errorLabel = (<label>{this.state.errorMessage}</label>);
     let selectAllInput = this.nullIfNoSections(
       <input checked={this.state.sections.every(t => t.selected)}
-             onChange={this.onAllSectionsSelectedChange}
-             type="checkbox"
-             name="changeAllSelection"
-             id="changeAllSelection"
-             disabled={this.state.downloading}/>);
+        onChange={this.onAllSectionsSelectedChange}
+        type="checkbox"
+        name="changeAllSelection"
+        id="changeAllSelection"
+        disabled={this.state.downloading} />);
     let selectAllInputLabel = this.nullIfNoSections(
       <label htmlFor="changeAllSelection">Select / unselect all sections</label>
     );
@@ -278,7 +276,7 @@ class StartForm extends React.Component {
         {
           this.state.sections.map((section, index) => (
             <li
-              style={{ listStyleType: "none" }} 
+              style={{ listStyleType: "none" }}
               key={index}>
               <VideoSection
                 index={index}
@@ -288,24 +286,24 @@ class StartForm extends React.Component {
                 value={section.name}
                 startTime={section.start}
                 endTime={section.end}
-                style={{width: '50%'}}
+                style={{ width: '50%' }}
                 videoId={this.state.fetchedVideoId}
                 disabled={this.state.downloading}
               />
             </li>
           ))
         }
-        </ul>
+      </ul>
     );
     let downloadSectionsBtn = (
       this.nullIfNoSections(
         <button
           type="button"
           disabled={this.state.downloading ||
-                    !this.state.sections.some(s => s.selected)}
+            !this.state.sections.some(s => s.selected)}
           onClick={this.handleDownloadSections}>
           Download selected sections
-      </button>));
+        </button>));
     let videoTitleLabel = null;
     let videoDisplay = null;
     let downloadFullBtn = null;
@@ -315,12 +313,12 @@ class StartForm extends React.Component {
     let reflectionInput = null;
     if (this.state.fetchedVideoId != null) {
       videoTitleLabel = (
-      <div>
-        <label>Video:     </label>
-        <label style={{fontStyle: 'italic'}}>
-          {this.state.videoInfo.title}
-        </label>
-      </div>
+        <div>
+          <label>Video:     </label>
+          <label style={{ fontStyle: 'italic' }}>
+            {this.state.videoInfo.title}
+          </label>
+        </div>
       );
       let orientationTransformStyle = () => {
         let horizontalTransform = this.state.reflection === "horizontal" ? "scaleX(-1)" : "";
@@ -339,11 +337,11 @@ class StartForm extends React.Component {
         },
       };
       videoDisplay = (
-        <div style={{width: `${ytPreviewWidth}px`}}>
+        <div style={{ width: `${ytPreviewWidth}px` }}>
           <YouTube
             videoId={this.state.fetchedVideoId}
             opts={ytDisplayOpts}
-            style={{transform: orientationTransformStyle(),}} />
+            style={{ transform: orientationTransformStyle(), }} />
         </div>
       );
       downloadFullBtn = (
@@ -366,23 +364,23 @@ class StartForm extends React.Component {
       );
       downloadTimeRangeBtn = (
         <button
-            type="button"
-            disabled={this.state.downloading}
-            onClick={this.handleDownloadTimeRange}>
-            Download time range
-          </button>
+          type="button"
+          disabled={this.state.downloading}
+          onClick={this.handleDownloadTimeRange}>
+          Download time range
+        </button>
       );
       timeRangeInput = (
-          <Slider range
-                id="timerange"
-                min={0}
-                max={this.state.videoInfo.end}
-                value={[this.state.downloadTimeStart, this.state.downloadTimeEnd]}
-                style={{ marginTop: 16, width: `${ytPreviewWidth}px` }}
-                step={1}
-                tooltip={{formatter: toTimeString, placement: "topRight"}}
-                onChange={this.onTimeRangeChanged}
-          />
+        <Slider range
+          id="timerange"
+          min={0}
+          max={this.state.videoInfo.end}
+          value={[this.state.downloadTimeStart, this.state.downloadTimeEnd]}
+          style={{ marginTop: 16, width: `${ytPreviewWidth}px` }}
+          step={1}
+          tooltip={{ formatter: toTimeString, placement: "topRight" }}
+          onChange={this.onTimeRangeChanged}
+        />
       );
       if (this.state.mediaType !== 'audio') {
         reflectionInput = (
@@ -398,53 +396,53 @@ class StartForm extends React.Component {
       }
     }
     return (
-    <form>
-      <Row>
-        <Col span={24}>
-          <label style={{fontSize: '30px'}}>Enter a YouTube link:</label>
-        </Col>
-      </Row>
-      <Row>
-        <Col span={24}>{urlInput}</Col>
-      </Row>
-      <Row>
-        <Col span={24}>{this.state.downloading
-                          ? (<ThreeCircles
-                                height="25"
-                                width="25"
-                                color="#4fa94d"
-                                visible={true}/>)
-                          : submitBtn}
-        </Col>
-      </Row>
-      <Row>
-        <Col span={24}>{errorLabel}</Col>
-      </Row>
-      <Row>
-        <Col span={24}>{videoTitleLabel}</Col>
-      </Row>
-      <Row>
-        <Col span={24}>{videoDisplay}</Col>
-      </Row>
-      <Row>
-        <Col span={24}>{timeRangeInput}</Col>
-      </Row>
-      <Row>
-        <Col span={24}>{downloadTimeRangeBtn}</Col>
-      </Row>
-      <Row>
-        <Col span={24}>{downloadFullBtn}{mediaTypeSelector}{reflectionInput}</Col>
-      </Row>
-      <Row>
-        <Col span={24}>{downloadSectionsBtn}</Col>
-      </Row>
-      <Row>
-        <Col span={24}>{selectAllInput}{selectAllInputLabel}</Col>
-      </Row>
-      <Row>
-        <Col span={24}>{sectionsList}</Col>
-      </Row>
-    </form>
+      <form>
+        <Row>
+          <Col span={24}>
+            <label style={{ fontSize: '30px' }}>Enter a YouTube link:</label>
+          </Col>
+        </Row>
+        <Row>
+          <Col span={24}>{urlInput}</Col>
+        </Row>
+        <Row>
+          <Col span={24}>{this.state.downloading
+            ? (<ThreeCircles
+              height="25"
+              width="25"
+              color="#4fa94d"
+              visible={true} />)
+            : submitBtn}
+          </Col>
+        </Row>
+        <Row>
+          <Col span={24}>{errorLabel}</Col>
+        </Row>
+        <Row>
+          <Col span={24}>{videoTitleLabel}</Col>
+        </Row>
+        <Row>
+          <Col span={24}>{videoDisplay}</Col>
+        </Row>
+        <Row>
+          <Col span={24}>{timeRangeInput}</Col>
+        </Row>
+        <Row>
+          <Col span={24}>{downloadTimeRangeBtn}</Col>
+        </Row>
+        <Row>
+          <Col span={24}>{downloadFullBtn}{mediaTypeSelector}{reflectionInput}</Col>
+        </Row>
+        <Row>
+          <Col span={24}>{downloadSectionsBtn}</Col>
+        </Row>
+        <Row>
+          <Col span={24}>{selectAllInput}{selectAllInputLabel}</Col>
+        </Row>
+        <Row>
+          <Col span={24}>{sectionsList}</Col>
+        </Row>
+      </form>
     );
   }
 }
