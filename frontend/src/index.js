@@ -411,6 +411,7 @@ class StartForm extends React.Component {
         <Row>
           <Col span={24}>{urlInput}</Col>
         </Row>
+        <br />
         <Row>
           <Col span={24}>{this.state.downloading
             ? (<ThreeCircles
