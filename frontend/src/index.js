@@ -150,7 +150,6 @@ class StartForm extends React.Component {
       .then(data => this.setState({
         videoInfo: {
           title: data.title,
-          start: 0,
           end: data.length * 1000, // milliseconds
           selected: true
         },
