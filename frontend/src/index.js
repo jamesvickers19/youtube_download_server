@@ -52,18 +52,22 @@ function postJsonRequestParams(requestData) {
   };
 }
 
-function toTimeString(totalSeconds) {
+function toTimeString(totalMilliseconds) {
+  const totalSeconds = Math.floor(totalMilliseconds / 1000);
   const totalMinutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
-  const formatTime = (v) => String(v).padStart(2, '0');
-  const minuteStr = formatTime(minutes);
-  const secondStr = formatTime(seconds);
+  const milliseconds = totalMilliseconds - (hours * 60 * 60 * 1000) - (minutes * 60 * 1000) - (seconds * 1000);
+  const formatTime = (t, places) => String(t).padStart(places, '0');
+  let timeStr = `${formatTime(minutes, 2)}:${formatTime(seconds, 2)}`;
   if (hours > 0) {
-    return `${formatTime(hours)}:${minuteStr}:${secondStr}`;
+    timeStr = `${formatTime(hours, 2)}:${timeStr}`;
   }
-  return `${minuteStr}:${secondStr}`;
+  if (milliseconds > 0) {
+    timeStr += `.${formatTime(milliseconds, 3)}`;
+  }
+  return timeStr;
 }
 
 class StartForm extends React.Component {
@@ -147,11 +151,11 @@ class StartForm extends React.Component {
         videoInfo: {
           title: data.title,
           start: 0,
-          end: data.length,
+          end: data.length * 1000, // milliseconds
           selected: true
         },
         downloadTimeStart: 0,
-        downloadTimeEnd: data.length,
+        downloadTimeEnd: data.length * 1000.0,
         sections: data.sections.map(t => ({ ...t, selected: true })),
         fetchedVideoId: fetchedVideoId
       }
@@ -180,8 +184,8 @@ class StartForm extends React.Component {
       filename,
       [
         {
-          start: this.state.downloadTimeStart,
-          end: this.state.downloadTimeEnd,
+          start: this.state.downloadTimeStart / 1000.0, // convert start/end from millis to seconds
+          end: this.state.downloadTimeEnd / 1000.0,
           name: filename
         }
       ]
@@ -331,9 +335,8 @@ class StartForm extends React.Component {
         width: ytPreviewWidth,
         playerVars: {
           // https://developers.google.com/youtube/player_parameters
-          start: this.state.downloadTimeStart,
-          end: this.state.downloadTimeEnd,
-          // can hide controls with controls: 0
+          start: this.state.downloadTimeStart / 1000.0, // convert start/end from millis to seconds
+          end: this.state.downloadTimeEnd / 1000.0,
         },
       };
       videoDisplay = (
@@ -377,7 +380,7 @@ class StartForm extends React.Component {
           max={this.state.videoInfo.end}
           value={[this.state.downloadTimeStart, this.state.downloadTimeEnd]}
           style={{ marginTop: 16, width: `${ytPreviewWidth}px` }}
-          step={1}
+          step={50}
           tooltip={{ formatter: toTimeString, placement: "topRight" }}
           onChange={this.onTimeRangeChanged}
         />

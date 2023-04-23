@@ -2,6 +2,6 @@ from pydantic import BaseModel
 
 
 class Section(BaseModel):
-    start: int
-    end: int
+    start: float
+    end: float
     name: str
