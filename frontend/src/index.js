@@ -252,7 +252,7 @@ class StartForm extends React.Component {
       <button
         id="submitBtn"
         type="submit"
-        disabled={!this.state.videoId || this.state.downloading}
+        disabled={!this.state.videoId}
         // show glowing animation if valid video is entered and hasn't been fetched yet
         style={{
           animation: this.state.videoId && this.state.fetchedVideoId !== this.state.videoId
@@ -270,8 +270,7 @@ class StartForm extends React.Component {
         onChange={this.onAllSectionsSelectedChange}
         type="checkbox"
         name="changeAllSelection"
-        id="changeAllSelection"
-        disabled={this.state.downloading} />);
+        id="changeAllSelection" />);
     let selectAllInputLabel = this.nullIfNoSections(
       <label htmlFor="changeAllSelection">Select / unselect all sections</label>
     );
@@ -292,7 +291,6 @@ class StartForm extends React.Component {
                 endTime={section.end}
                 style={{ width: '50%' }}
                 videoId={this.state.fetchedVideoId}
-                disabled={this.state.downloading}
               />
             </li>
           ))
@@ -303,8 +301,7 @@ class StartForm extends React.Component {
       this.nullIfNoSections(
         <button
           type="button"
-          disabled={this.state.downloading ||
-            !this.state.sections.some(s => s.selected)}
+          disabled={!this.state.sections.some(s => s.selected)}
           onClick={this.handleDownloadSections}>
           Download selected sections
         </button>));
@@ -350,7 +347,6 @@ class StartForm extends React.Component {
       downloadFullBtn = (
         <button
           type="button"
-          disabled={this.state.downloading}
           onClick={this.handleDownloadEntireVideo}>
           Download full
         </button>
@@ -368,7 +364,6 @@ class StartForm extends React.Component {
       downloadTimeRangeBtn = (
         <button
           type="button"
-          disabled={this.state.downloading}
           onClick={this.handleDownloadTimeRange}>
           Download time range
         </button>
