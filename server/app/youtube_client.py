@@ -1,5 +1,5 @@
 import glob
-from models import Section
+from models import ProcessingParameters, Section
 from moviepy.editor import vfx, VideoFileClip
 import os
 from pathlib import Path
@@ -9,7 +9,6 @@ import uuid
 from zipfile import ZipFile
 
 from yt_dlp import YoutubeDL
-
 
 temp_dir = "C:\\Users\\james\\AppData\\Local\\Temp\\" if platform.system() == 'Windows' else "/tmp/"
 
@@ -25,17 +24,15 @@ def try_delete_file(filename):
         print(ex)
 
 
-# degrees: positive numbers counterclockwise, negative numbers clockwise.
-def process_video(input_filename, as_gif, degrees, mirror_horizontal, mirror_vertical):
+def process_video(input_filename: str, as_gif: bool, processing: ProcessingParameters):
     clip = VideoFileClip(input_filename)
-    if degrees is not None:
-        clip = clip.rotate(degrees)
-    if mirror_horizontal:
+    if processing.rotationDegrees is not None:
+        clip = clip.rotate(processing.rotationDegrees)
+    if processing.reflect_horizontal:
         clip = clip.fx(vfx.mirror_x)
-    if mirror_vertical:
+    if processing.reflect_vertical:
         clip = clip.fx(vfx.mirror_y)
     path = Path(input_filename)
-    output_filename = None
     if as_gif:
         output_filename = f"{temp_dir}{path.stem}.gif"
         clip.write_gif(output_filename, fps=10)
@@ -67,9 +64,7 @@ def find_files(filename):
 def download(video_id: str,
              sections: List[Section],
              media_type: str,
-             rotation: int = None,
-             mirror_horizontal: bool = None,
-             mirror_vertical: bool = None) -> str:
+             processing: ProcessingParameters) -> str:
     ytdl_params = {
         # for audio, prefer m4a or mp4 if available since mobile devices can play
         # those but not e.g. webm
@@ -77,7 +72,10 @@ def download(video_id: str,
     }
     download_as_gif = media_type == 'gif'
     visual_format = download_as_gif or media_type == 'video'
-    orientation_required = visual_format and (rotation is not None or mirror_horizontal or mirror_vertical)
+    orientation_required = visual_format and \
+                           (processing.rotationDegrees is not None
+                            or processing.reflect_horizontal
+                            or processing.reflect_vertical)
     file_id = uuid.uuid4()
     filename_prefix = f"{file_id}_"
     if len(sections) > 0:
@@ -95,7 +93,7 @@ def download(video_id: str,
                 for f in filenames:
                     written_filename = f
                     if orientation_required or download_as_gif:
-                        written_filename = process_video(f, download_as_gif, rotation, mirror_horizontal, mirror_vertical)
+                        written_filename = process_video(f, download_as_gif, processing)
                         processed_filenames.append(written_filename)
                     section_name = Path(f).stem[len(filename_prefix):]
                     zip_file.write(written_filename, arcname=f"{section_name}{Path(written_filename).suffix}")
@@ -104,17 +102,16 @@ def download(video_id: str,
 
         main_filename = find_files(file_id)[0]
         if orientation_required or download_as_gif:
-            main_filename = process_video(main_filename, download_as_gif, rotation, mirror_horizontal, mirror_vertical)
+            main_filename = process_video(main_filename, download_as_gif, processing)
         return main_filename
-
 
 # get_meta('1pi9t3dnAXs')
 
 # # download example
-#d = download('2dNGPkoDzh0', sections=None, include_video=False)
-#print(f"d: {d}")
+# d = download('2dNGPkoDzh0', sections=None, include_video=False)
+# print(f"d: {d}")
 
-#with YoutubeDL() as ydl:
+# with YoutubeDL() as ydl:
 #    info = ydl.extract_info(youtube_url('1pi9t3dnAXs'), download=False)
 #    ydl.list_formats(info)
 #

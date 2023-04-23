@@ -107,8 +107,17 @@ class StartForm extends React.Component {
     if (sections) {
       requestData['sections'] = sections;
     }
-    if (this.state.reflection !== 'none') {
-      requestData['reflection'] = this.state.reflection;
+
+    let processingParams = {};
+    if (this.state.reflection === 'horizontal') {
+      processingParams['reflect_horizontal'] = true;
+    }
+    else if (this.state.reflection === 'vertical') {
+      processingParams['reflect_vertical'] = true;
+    }
+
+    if (Object.keys(processingParams).length > 0) {
+      requestData['processing'] = processingParams;
     }
 
     let requestParams = postJsonRequestParams(requestData);

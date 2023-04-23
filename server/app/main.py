@@ -1,7 +1,7 @@
 from fastapi import BackgroundTasks, FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from models import Section
+from models import ProcessingParameters, Section
 import os
 from pydantic import BaseModel
 from typing import List
@@ -37,8 +37,7 @@ class DownloadRequest(BaseModel):
     filename: str
     media_type: str
     sections: List[Section] = []
-    reflection: str = None
-    rotation: int = None
+    processing: ProcessingParameters = None
 
 
 @app.post('/download')
@@ -48,13 +47,10 @@ def download_video_by_id(request: DownloadRequest, background_tasks: BackgroundT
         video_id=request.video_id,
         sections=request.sections,
         media_type=request.media_type,
-        rotation=request.rotation,
-        mirror_horizontal=request.reflection == 'horizontal',
-        mirror_vertical=request.reflection == 'vertical')
+        processing=request.processing)
     # Cleanup downloaded file after the request
     background_tasks.add_task(try_delete_file, downloaded_file)
     extension = get_extension(downloaded_file)[1:]  # leave off the starting . in the extension
-    mimetype = ''
     if len(request.sections) > 0:
         mimetype = "application/zip"
     elif request.media_type == 'audio' or request.media_type == 'video':
