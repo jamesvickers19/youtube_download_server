@@ -84,6 +84,7 @@ class StartForm extends React.Component {
     this.handleDownloadSections = this.handleDownloadSections.bind(this);
     this.onSectionSelectedChange = this.onSectionSelectedChange.bind(this);
     this.onSectionNameChange = this.onSectionNameChange.bind(this);
+    this.handleDownloadSection = this.handleDownloadSection.bind(this);
     this.onAllSectionsSelectedChange = this.onAllSectionsSelectedChange.bind(this);
     this.nullIfNoSections = this.nullIfNoSections.bind(this);
     this.downloadFromServer = this.downloadFromServer.bind(this);
@@ -212,6 +213,10 @@ class StartForm extends React.Component {
     this.downloadFromServer(filename, selectedSections);
   }
 
+  handleDownloadSection(section) {
+    this.downloadFromServer(section.name, [section]);
+  }
+
   onSectionSelectedChange(event) {
     let sections = this.state.sections;
     let index = event.target.getAttribute("index");
@@ -291,12 +296,10 @@ class StartForm extends React.Component {
               key={index}>
               <VideoSection
                 index={index}
+                section={section}
                 onSelectedChange={this.onSectionSelectedChange}
                 onNameChange={this.onSectionNameChange}
-                isChecked={section.selected}
-                value={section.name}
-                startTime={section.start}
-                endTime={section.end}
+                onDownloadSection={this.handleDownloadSection}
                 style={{ width: '50%' }}
                 videoId={this.state.fetchedVideoId}
               />
