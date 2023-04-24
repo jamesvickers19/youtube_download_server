@@ -72,10 +72,7 @@ def download(video_id: str,
     }
     download_as_gif = media_type == 'gif'
     visual_format = download_as_gif or media_type == 'video'
-    orientation_required = visual_format and \
-                           (processing.rotationDegrees is not None
-                            or processing.reflect_horizontal
-                            or processing.reflect_vertical)
+    orientation_required = visual_format and processing is not None
     file_id = uuid.uuid4()
     filename_prefix = f"{file_id}_"
     if len(sections) > 0:
