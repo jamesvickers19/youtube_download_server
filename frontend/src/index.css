@@ -1,42 +1,44 @@
 body {
-    background-color: #99ccff;
+  background-color: #99ccff;
 }
 
 label {
-    font-size: 20px;
-    font-weight: 700;
+  font-size: 20px;
+  font-weight: 700;
 }
 
 #urlInput {
-    height: 25px;
-    width: 50%;
+  height: 25px;
+  width: 50%;
 }
 
 @keyframes glowing {
-    0% {
-      background-color: #2ba805;
-      box-shadow: 0 0 5px #2ba805;
-    }
-    50% {
-      background-color: #49e819;
-      box-shadow: 0 0 20px #49e819;
-    }
-    100% {
-      background-color: #2ba805;
-      box-shadow: 0 0 5px #2ba805;
-    }
+  0% {
+    background-color: #2ba805;
+    box-shadow: 0 0 5px #2ba805;
+  }
+
+  50% {
+    background-color: #49e819;
+    box-shadow: 0 0 20px #49e819;
+  }
+
+  100% {
+    background-color: #2ba805;
+    box-shadow: 0 0 5px #2ba805;
+  }
 }
 
 #submitBtn {
-    -webkit-border-radius: 60px;
-    border-radius: 60px;
-    border: none;
-    color: #eeeeee;
-    cursor: pointer;
-    display: inline-block;
-    font-family: sans-serif;
-    font-size: 20px;
-    padding: 10px 10px;
-    text-align: center;
-    text-decoration: none;
+  -webkit-border-radius: 60px;
+  border-radius: 60px;
+  border: none;
+  color: #eeeeee;
+  cursor: pointer;
+  display: inline-block;
+  font-family: sans-serif;
+  font-size: 20px;
+  padding: 10px 10px;
+  text-align: center;
+  text-decoration: none;
 }
