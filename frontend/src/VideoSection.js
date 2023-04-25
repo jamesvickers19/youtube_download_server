@@ -21,7 +21,7 @@ export const VideoSection = props => {
         {toTimeString(props.section.start)} - {toTimeString(props.section.end)}
       </a>
       <button type="button" onClick={() => props.onDownloadSection(props.section)}>
-        Download section
+        Download
       </button>
     </div>
   )
