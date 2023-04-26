@@ -300,7 +300,6 @@ class StartForm extends React.Component {
                 onSelectedChange={this.onSectionSelectedChange}
                 onNameChange={this.onSectionNameChange}
                 onDownloadSection={this.handleDownloadSection}
-                style={{ width: '50%' }}
                 videoId={this.state.fetchedVideoId}
               />
             </li>
