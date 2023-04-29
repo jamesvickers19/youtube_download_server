@@ -24,14 +24,15 @@ def try_delete_file(filename):
         print(ex)
 
 
-def process_video(input_filename: str, as_gif: bool, processing: ProcessingParameters):
+def do_processing(input_filename: str, as_gif: bool, processing: ProcessingParameters):
     clip = VideoFileClip(input_filename)
-    if processing.rotationDegrees is not None:
-        clip = clip.rotate(processing.rotationDegrees)
-    if processing.reflect_horizontal:
-        clip = clip.fx(vfx.mirror_x)
-    if processing.reflect_vertical:
-        clip = clip.fx(vfx.mirror_y)
+    if processing is not None:
+        if processing.reflect_horizontal:
+            clip = clip.fx(vfx.mirror_x)
+        if processing.reflect_vertical:
+            clip = clip.fx(vfx.mirror_y)
+        if processing.reverse:
+            clip = clip.fx(vfx.time_mirror)
     path = Path(input_filename)
     if as_gif:
         output_filename = f"{temp_dir}{path.stem}.gif"
@@ -71,8 +72,6 @@ def download(video_id: str,
         'format': 'bestaudio[ext=m4a]/bestaudio[ext=mp3]/bestaudio' if media_type == 'audio' else 'best'
     }
     download_as_gif = media_type == 'gif'
-    visual_format = download_as_gif or media_type == 'video'
-    orientation_required = visual_format and processing is not None
     file_id = uuid.uuid4()
     filename_prefix = f"{file_id}_"
     if len(sections) > 0:
@@ -89,8 +88,8 @@ def download(video_id: str,
                 processed_filenames = []
                 for f in filenames:
                     written_filename = f
-                    if orientation_required or download_as_gif:
-                        written_filename = process_video(f, download_as_gif, processing)
+                    if processing is not None or download_as_gif:
+                        written_filename = do_processing(f, download_as_gif, processing)
                         processed_filenames.append(written_filename)
                     section_name = Path(f).stem[len(filename_prefix):]
                     zip_file.write(written_filename, arcname=f"{section_name}{Path(written_filename).suffix}")
@@ -98,8 +97,8 @@ def download(video_id: str,
             return zip_filename
 
         main_filename = find_files(file_id)[0]
-        if orientation_required or download_as_gif:
-            main_filename = process_video(main_filename, download_as_gif, processing)
+        if processing is not None or download_as_gif:
+            main_filename = do_processing(main_filename, download_as_gif, processing)
         return main_filename
 
 # get_meta('1pi9t3dnAXs')
