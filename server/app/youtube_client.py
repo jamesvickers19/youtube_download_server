@@ -31,8 +31,6 @@ def do_processing(input_filename: str, as_gif: bool, processing: ProcessingParam
             clip = clip.fx(vfx.mirror_x)
         if processing.reflect_vertical:
             clip = clip.fx(vfx.mirror_y)
-        if processing.reverse:
-            clip = clip.fx(vfx.time_mirror)
     path = Path(input_filename)
     if as_gif:
         output_filename = f"{temp_dir}{path.stem}.gif"
