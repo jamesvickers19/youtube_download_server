@@ -424,7 +424,7 @@ class StartForm extends React.Component {
             max={10.0}
             value={this.state.playbackSpeed || 1.0}
             step={0.25}
-            tooltip={{ formatter: (value) => `${value}x`, placement: "top" }}
+            tooltip={{ formatter: (value) => `${value}x`, placement: "topRight" }}
             onChange={async value => {
               this.onPlaybackSpeedChanged(value);
               await this.youtubePlayerRef.getInternalPlayer().setPlaybackRate(value);
