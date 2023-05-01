@@ -10,4 +10,5 @@ class Section(BaseModel):
 class ProcessingParameters(BaseModel):
     reflect_horizontal: bool = None
     reflect_vertical: bool = None
-    rotationDegrees: int = None
+    black_and_white: bool = None
+    playback_speed: float = None

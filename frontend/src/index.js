@@ -81,6 +81,8 @@ class StartForm extends React.Component {
     this.handleDownloadEntireVideo = this.handleDownloadEntireVideo.bind(this);
     this.handleDownloadTimeRange = this.handleDownloadTimeRange.bind(this);
     this.handleReflectionInputChange = this.handleReflectionInputChange.bind(this);
+    this.onBlackAndWhiteSelectedChange = this.onBlackAndWhiteSelectedChange.bind(this);
+    this.onPlaybackSpeedChanged = this.onPlaybackSpeedChanged.bind(this);
     this.handleDownloadSections = this.handleDownloadSections.bind(this);
     this.onSectionSelectedChange = this.onSectionSelectedChange.bind(this);
     this.onSectionNameChange = this.onSectionNameChange.bind(this);
@@ -115,6 +117,14 @@ class StartForm extends React.Component {
     }
     else if (this.state.reflection === 'vertical') {
       processingParams['reflect_vertical'] = true;
+    }
+
+    if (this.state.blackAndWhite) {
+      processingParams["black_and_white"] = true;
+    }
+
+    if (this.state.playbackSpeed !== null && this.state.playbackSpeed !== 1.0) {
+      processingParams["playback_speed"] = this.state.playbackSpeed;
     }
 
     if (Object.keys(processingParams).length > 0) {
@@ -203,6 +213,14 @@ class StartForm extends React.Component {
 
   handleReflectionInputChange(event) {
     this.setState({ reflection: event.target.value });
+  }
+
+  onBlackAndWhiteSelectedChange(event) {
+    this.setState({ blackAndWhite: event.target.checked });
+  }
+
+  onPlaybackSpeedChanged(value) {
+    this.setState({ playbackSpeed: value });
   }
 
   handleDownloadSections(event) {
@@ -322,6 +340,8 @@ class StartForm extends React.Component {
     let downloadTimeRangeBtn = null;
     let timeRangeInput = null;
     let reflectionInput = null;
+    let playbackSpeedInput = null;
+    let blackAndWhiteInput = null;
     if (this.state.fetchedVideoId != null) {
       videoTitleLabel = (
         <div>
@@ -351,7 +371,11 @@ class StartForm extends React.Component {
           <YouTube
             videoId={this.state.fetchedVideoId}
             opts={ytDisplayOpts}
-            style={{ transform: orientationTransformStyle(), }} />
+            ref={p => this.youtubePlayerRef = p}
+            style={{
+              filter: this.state.blackAndWhite ? "grayscale(100%)" : "",
+              transform: orientationTransformStyle(),
+            }} />
         </div>
       );
       downloadFullBtn = (
@@ -390,6 +414,24 @@ class StartForm extends React.Component {
           onChange={this.onTimeRangeChanged}
         />
       );
+      playbackSpeedInput = (
+        <div>
+          <label htmlFor="playbackSpeed">Playback speed: </label>
+          <Slider
+            id="playbackSpeed"
+            name="playbackSpeed"
+            min={0.25}
+            max={10.0}
+            value={this.state.playbackSpeed || 1.0}
+            step={0.25}
+            tooltip={{ formatter: (value) => `${value}x`, placement: "top" }}
+            onChange={async value => {
+              this.onPlaybackSpeedChanged(value);
+              await this.youtubePlayerRef.getInternalPlayer().setPlaybackRate(value);
+            }}
+          />
+        </div>
+      );
       if (this.state.mediaType !== 'audio') {
         reflectionInput = (
           <div>
@@ -399,6 +441,18 @@ class StartForm extends React.Component {
               <option value="horizontal">Horizontal</option>
               <option value="vertical">Vertical</option>
             </select>
+          </div>
+        );
+        blackAndWhiteInput = (
+          <div>
+            <label htmlFor="blackAndWhiteInput">Black and White</label>
+            <input
+              type="checkbox"
+              id="blackAndWhiteInput"
+              name="blackAndWhiteInput"
+              checked={this.state.blackAndWhite}
+              onChange={this.onBlackAndWhiteSelectedChange}
+            />
           </div>
         );
       }
@@ -441,6 +495,9 @@ class StartForm extends React.Component {
         </Row>
         <Row>
           <Col span={24}>{downloadFullBtn}{mediaTypeSelector}{reflectionInput}</Col>
+        </Row>
+        <Row>
+          <Col span={24}>{playbackSpeedInput}{blackAndWhiteInput}</Col>
         </Row>
         <Row>
           <Col span={24}>{downloadSectionsBtn}</Col>
