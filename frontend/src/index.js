@@ -123,7 +123,7 @@ class StartForm extends React.Component {
       processingParams["black_and_white"] = true;
     }
 
-    if (this.state.playbackSpeed !== null && this.state.playbackSpeed !== 1.0) {
+    if (this.state.playbackSpeed && this.state.playbackSpeed !== 1.0) {
       processingParams["playback_speed"] = this.state.playbackSpeed;
     }
 
