@@ -81,6 +81,7 @@ def download(video_id: str,
         ytdl_params['download_ranges'] = (lambda _1, _2: sections_to_download_ranges(sections))
     else:
         ytdl_params['outtmpl'] = f"{temp_dir}{file_id}.%(ext)s"
+    processing_required = (len(processing or {}) > 0) or download_as_gif
     with YoutubeDL(ytdl_params) as ytdl:
         error = ytdl.download([youtube_url(video_id)])
         if len(sections) > 1:
@@ -90,7 +91,7 @@ def download(video_id: str,
                 processed_filenames = []
                 for f in filenames:
                     written_filename = f
-                    if processing is not None or download_as_gif:
+                    if processing_required:
                         written_filename = do_processing(f, download_as_gif, processing)
                         processed_filenames.append(written_filename)
                     section_name = Path(f).stem[len(filename_prefix):]
@@ -99,7 +100,7 @@ def download(video_id: str,
             return zip_filename
 
         main_filename = find_files(file_id)[0]
-        if processing is not None or download_as_gif:
+        if processing_required:
             main_filename = do_processing(main_filename, download_as_gif, processing)
         return main_filename
 
