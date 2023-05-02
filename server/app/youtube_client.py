@@ -81,7 +81,7 @@ def download(video_id: str,
         ytdl_params['download_ranges'] = (lambda _1, _2: sections_to_download_ranges(sections))
     else:
         ytdl_params['outtmpl'] = f"{temp_dir}{file_id}.%(ext)s"
-    processing_required = (len(processing or {}) > 0) or download_as_gif
+    processing_required = processing is not None or download_as_gif
     with YoutubeDL(ytdl_params) as ytdl:
         error = ytdl.download([youtube_url(video_id)])
         if len(sections) > 1:
