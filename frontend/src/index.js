@@ -414,6 +414,25 @@ class StartForm extends React.Component {
           onChange={this.onTimeRangeChanged}
         />
       );
+      playbackSpeedInput = (
+        <div>
+          <label htmlFor="playbackSpeed">Playback speed: </label>
+          <Slider
+            id="playbackSpeed"
+            name="playbackSpeed"
+            min={0.25}
+            max={10.0}
+            value={this.state.playbackSpeed || 1.0}
+            step={0.25}
+            tooltip={{ formatter: (value) => `${value}x`, placement: "topRight" }}
+            onChange={async value => {
+              this.onPlaybackSpeedChanged(value);
+              await this.youtubePlayerRef.getInternalPlayer().setPlaybackRate(value);
+            }}
+          />
+        </div>
+      );
+
       if (this.state.mediaType !== 'audio') {
         reflectionInput = (
           <div>
@@ -423,24 +442,6 @@ class StartForm extends React.Component {
               <option value="horizontal">Horizontal</option>
               <option value="vertical">Vertical</option>
             </select>
-          </div>
-        );
-        playbackSpeedInput = (
-          <div>
-            <label htmlFor="playbackSpeed">Playback speed: </label>
-            <Slider
-              id="playbackSpeed"
-              name="playbackSpeed"
-              min={0.25}
-              max={10.0}
-              value={this.state.playbackSpeed || 1.0}
-              step={0.25}
-              tooltip={{ formatter: (value) => `${value}x`, placement: "topRight" }}
-              onChange={async value => {
-                this.onPlaybackSpeedChanged(value);
-                await this.youtubePlayerRef.getInternalPlayer().setPlaybackRate(value);
-              }}
-            />
           </div>
         );
         blackAndWhiteInput = (

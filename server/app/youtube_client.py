@@ -1,6 +1,6 @@
 import glob
 from models import ProcessingParameters, Section
-from moviepy.editor import vfx, VideoFileClip
+from moviepy.editor import AudioFileClip, vfx, VideoFileClip
 import os
 from pathlib import Path
 import platform
@@ -24,25 +24,43 @@ def try_delete_file(filename):
         print(ex)
 
 
-def do_processing(input_filename: str, as_gif: bool, processing: ProcessingParameters):
+def do_processing(input_filename: str, is_audio: bool, as_gif: bool, processing: ProcessingParameters):
+    if is_audio:
+        return do_processing_audio(input_filename, processing)
+
     clip = VideoFileClip(input_filename)
     if processing is not None:
         if processing.reflect_horizontal:
             clip = clip.fx(vfx.mirror_x)
         if processing.reflect_vertical:
             clip = clip.fx(vfx.mirror_y)
-        if processing.playback_speed:
-            clip = clip.fx(vfx.speedx, factor=processing.playback_speed)
         if processing.black_and_white:
             clip = clip.fx(vfx.blackwhite)
+        if processing.playback_speed:
+            clip = clip.fx(vfx.speedx, factor=processing.playback_speed)
     path = Path(input_filename)
-    if as_gif:
+    if as_gif and not is_audio:
         output_filename = f"{temp_dir}{path.stem}.gif"
         clip.write_gif(output_filename, fps=10)
     else:
         output_filename = f"{temp_dir}{path.stem}_processed{path.suffix}"
         clip.write_videofile(output_filename)
     try_delete_file(input_filename)
+    return output_filename
+
+
+def do_processing_audio(input_filename: str, processing: ProcessingParameters):
+    clip = AudioFileClip(input_filename)
+    if processing.playback_speed:
+        clip = clip.fx(vfx.speedx, factor=processing.playback_speed)
+    path = Path(input_filename)
+    output_filename = f"{temp_dir}{path.stem}_processed{path.suffix}"
+    print(f"input: {input_filename}")
+    clip.write_audiofile(output_filename) # TODO this not actually writing?
+    try_delete_file(input_filename)
+    print(f"output: {output_filename}")
+    import time
+    time.sleep(5000)
     return output_filename
 
 
@@ -81,7 +99,8 @@ def download(video_id: str,
         ytdl_params['download_ranges'] = (lambda _1, _2: sections_to_download_ranges(sections))
     else:
         ytdl_params['outtmpl'] = f"{temp_dir}{file_id}.%(ext)s"
-    processing_required = (len(processing or {}) > 0) or download_as_gif
+    processing_required = processing is not None or download_as_gif
+    is_audio = media_type == 'audio'
     with YoutubeDL(ytdl_params) as ytdl:
         error = ytdl.download([youtube_url(video_id)])
         if len(sections) > 1:
@@ -92,7 +111,7 @@ def download(video_id: str,
                 for f in filenames:
                     written_filename = f
                     if processing_required:
-                        written_filename = do_processing(f, download_as_gif, processing)
+                        written_filename = do_processing(f, is_audio, download_as_gif, processing)
                         processed_filenames.append(written_filename)
                     section_name = Path(f).stem[len(filename_prefix):]
                     zip_file.write(written_filename, arcname=f"{section_name}{Path(written_filename).suffix}")
@@ -101,7 +120,7 @@ def download(video_id: str,
 
         main_filename = find_files(file_id)[0]
         if processing_required:
-            main_filename = do_processing(main_filename, download_as_gif, processing)
+            main_filename = do_processing(main_filename, is_audio, download_as_gif, processing)
         return main_filename
 
 # get_meta('1pi9t3dnAXs')
