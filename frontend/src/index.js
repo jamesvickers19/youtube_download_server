@@ -243,9 +243,21 @@ class StartForm extends React.Component {
   }
 
   onMediaTypeChanged(event) {
+    const mediaType = event.target.value;
+    if (mediaType === "audio") {
+      // reset processing controls that don't make sense for audio
     this.setState({
-      mediaType: event.target.value
+        blackAndWhite: null,
+        playbackSpeed: null,
+        reflection: null,
+        mediaType: mediaType,
     });
+    }
+    else {
+      this.setState({
+        mediaType: mediaType,
+      });
+    }
   }
 
   onTimeRangeChanged(value) {
