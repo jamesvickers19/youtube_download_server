@@ -1,5 +1,5 @@
 
-Live at youtubeslicer.site
+Live at youtubeslicer.com
 
 run server with reload: uvicorn main:app --reload
 (From anaconda shell)

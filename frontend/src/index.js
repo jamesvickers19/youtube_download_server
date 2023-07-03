@@ -17,7 +17,7 @@ let devMode = false;
 let serverHost = ''; // production
 if (devMode) {
   // local development; must enable at this site
-  serverHost = 'https://cors-anywhere.herokuapp.com/https://youtubeslicer.site/';
+  serverHost = 'https://cors-anywhere.herokuapp.com/https://youtubeslicer.com/';
 }
 
 function download(blob, name) {
@@ -246,12 +246,12 @@ class StartForm extends React.Component {
     const mediaType = event.target.value;
     if (mediaType === "audio") {
       // reset processing controls that don't make sense for audio
-    this.setState({
+      this.setState({
         blackAndWhite: null,
         playbackSpeed: null,
         reflection: null,
         mediaType: mediaType,
-    });
+      });
     }
     else {
       this.setState({

@@ -7,7 +7,7 @@ if ! [ -x "$(command -v docker-compose)" ]; then
   exit 1
 fi
 
-domains=(youtubeslicer.site)
+domains=(youtubeslicer.com)
 rsa_key_size=4096
 data_path="./certbot"
 email="lambdatallc@gmail.com" # Adding a valid address is strongly recommended
