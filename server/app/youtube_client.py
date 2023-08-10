@@ -38,7 +38,7 @@ def do_processing(input_filename: str, as_gif: bool, processing: ProcessingParam
     path = Path(input_filename)
     if as_gif:
         output_filename = f"{temp_dir}{path.stem}.gif"
-        clip.write_gif(output_filename, fps=10)
+        clip.write_gif(output_filename, fps=30)
     else:
         output_filename = f"{temp_dir}{path.stem}_processed{path.suffix}"
         clip.write_videofile(output_filename)
@@ -107,7 +107,7 @@ def download(video_id: str,
 # get_meta('1pi9t3dnAXs')
 
 # # download example
-# d = download('2dNGPkoDzh0', sections=None, include_video=False)
+# d = download(video_id='2dNGPkoDzh0', sections=[], media_type='gif', processing=None)
 # print(f"d: {d}")
 
 # with YoutubeDL() as ydl:
