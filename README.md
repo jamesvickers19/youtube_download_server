@@ -2,7 +2,7 @@
 Live at youtubeslicer.com
 
 run server with reload: uvicorn main:app --reload
-(From anaconda shell)
+(From anaconda shell in 'server/app' folder)
 
 build frontend and copy into server as static files: build_frontend.sh
 
