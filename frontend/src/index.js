@@ -5,6 +5,7 @@ import { Col, Row } from 'antd';
 import { ThreeCircles } from "react-loader-spinner";
 import { Slider } from 'antd';
 import VideoSection from './VideoSection'
+import PlaylistVideo from './PlaylistVideo'
 import YouTube from 'react-youtube';
 import reportWebVitals from './reportWebVitals';
 
@@ -42,6 +43,19 @@ function getVideoId(text) {
   const url = new URL(text);
   const urlParams = new URLSearchParams(url.search);
   return urlParams.get('v') ?? url.pathname.substring(1);
+}
+
+function getPlaylistId(text) {
+  const youtubeRegex = /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|list\/|playlist\?list=|playlist\?.+&list=))((\w|-){11})(?:\S+)?$/;
+  if (!text.match(youtubeRegex)) {
+    return null;
+  }
+  if (!text.startsWith('http://') && !text.startsWith('https://')) {
+    text = 'https://' + text;
+  }
+  const url = new URL(text);
+  const urlParams = new URLSearchParams(url.search);
+  return urlParams.get('list');
 }
 
 function postJsonRequestParams(requestData) {
@@ -84,26 +98,33 @@ class StartForm extends React.Component {
     this.onBlackAndWhiteSelectedChange = this.onBlackAndWhiteSelectedChange.bind(this);
     this.onPlaybackSpeedChanged = this.onPlaybackSpeedChanged.bind(this);
     this.handleDownloadSections = this.handleDownloadSections.bind(this);
+    this.handleDownloadSelectedPlaylistVideos = this.handleDownloadSelectedPlaylistVideos.bind(this);
     this.onSectionSelectedChange = this.onSectionSelectedChange.bind(this);
     this.onSectionNameChange = this.onSectionNameChange.bind(this);
     this.handleDownloadSection = this.handleDownloadSection.bind(this);
     this.onAllSectionsSelectedChange = this.onAllSectionsSelectedChange.bind(this);
+    this.onAllPlaylistVideosSelectedChange = this.onAllPlaylistVideosSelectedChange.bind(this);
+    this.onPlaylistVideoSelectedChange = this.onPlaylistVideoSelectedChange.bind(this);
+    this.handleDownloadPlaylistVideo = this.handleDownloadPlaylistVideo.bind(this);
     this.nullIfNoSections = this.nullIfNoSections.bind(this);
-    this.downloadFromServer = this.downloadFromServer.bind(this);
+    this.nullIfNoPlaylistVideos = this.nullIfNoPlaylistVideos.bind(this);
+    this.downloadFromServer = this.downloadVideoFromServer.bind(this);
   }
 
   handleVideoUrlInputChange(event) {
     let url = event.target.value;
+    let playlistId = getPlaylistId(url);
     let videoId = getVideoId(url);
     this.setState({
-      url: url,
-      videoId: videoId
+      playlistId,
+      url,
+      videoId,
     });
   }
 
-  downloadFromServer(filename, sections) {
+  downloadVideoFromServer(filename, videoId, sections) {
     let requestData = {
-      'video_id': this.state.fetchedVideoId,
+      'video_id': videoId,
       'media_type': this.state.mediaType || 'video',
       'filename': filename,
     };
@@ -138,7 +159,7 @@ class StartForm extends React.Component {
       errorMessage: errorMsg,
       downloading: true
     });
-    fetch(`${serverHost}download`, requestParams)
+    fetch(`${serverHost}download_video`, requestParams)
       .then(response => {
         const header = response.headers.get('Content-Disposition');
         const parts = header.split(';');
@@ -158,29 +179,30 @@ class StartForm extends React.Component {
       });
   }
 
-  handleSubmit(event) {
-    let fetchedVideoId = this.state.videoId;
+  downloadVideosFromServer(filename, video_ids) {
+    let requestData = {
+      'video_ids': video_ids,
+      'media_type': this.state.mediaType || 'video',
+      'filename': filename,
+    };
+
+    let requestParams = postJsonRequestParams(requestData);
+    let attachmentName = '';
     let errorMsg = "";
     this.setState({
       errorMessage: errorMsg,
       downloading: true
     });
-    fetch(`${serverHost}meta/${fetchedVideoId}`)
-      .then(response => response.json())
-      .then(data => this.setState({
-        videoInfo: {
-          title: data.title,
-          end: data.length * 1000, // milliseconds
-          selected: true
-        },
-        downloadTimeStart: 0,
-        downloadTimeEnd: data.length * 1000.0,
-        sections: data.sections.map(t => ({ ...t, selected: true })),
-        fetchedVideoId: fetchedVideoId
-      }
-      ))
+    fetch(`${serverHost}download_videos`, requestParams)
+      .then(response => {
+        const header = response.headers.get('Content-Disposition');
+        const parts = header.split(';');
+        attachmentName = parts[1].split('=')[1].replace(/"/g, "");
+        return response.blob();
+      })
+      .then((blob) => download(blob, attachmentName))
       .catch(error => {
-        console.log(`Error from meta endpoint: ${error}`);
+        console.log(`Error from download playlist endpoint: ${error}`);
         errorMsg = 'Error, please try again';
       })
       .finally(() => {
@@ -189,18 +211,79 @@ class StartForm extends React.Component {
           errorMessage: errorMsg,
         });
       });
+  }
+
+  handleSubmit(event) {
+    let errorMsg = "";
+    this.setState({
+      errorMessage: errorMsg,
+      downloading: true
+    });
+    if (this.state.videoId) {
+      let fetchedVideoId = this.state.videoId;
+      fetch(`${serverHost}video_meta/${fetchedVideoId}`)
+        .then(response => response.json())
+        .then(data => this.setState({
+          title: data.title,
+          end: data.duration * 1000, // milliseconds
+          downloadTimeStart: 0,
+          downloadTimeEnd: data.duration * 1000.0,
+          sections: data.sections.map(t => ({ ...t, selected: true })),
+          fetchedVideoId: fetchedVideoId,
+          fetchedPlaylistId: null,
+          playlistVideos: null,
+        }
+        ))
+        .catch(error => {
+          console.log(`Error from video meta endpoint: ${error}`);
+          errorMsg = 'Error, please try again';
+        })
+        .finally(() => {
+          this.setState({
+            downloading: false,
+            errorMessage: errorMsg,
+          });
+        });
+    }
+    else if (this.state.playlistId) {
+      let fetchedPlaylistId = this.state.playlistId;
+      fetch(`${serverHost}playlist_meta/${fetchedPlaylistId}`)
+        .then(response => response.json())
+        .then(data => this.setState({
+          title: data.title,
+          playlistVideos: data.playlistVideos.map(v => ({ ...v, selected: true })),
+          fetchedPlaylistId: fetchedPlaylistId,
+          fetchedVideoId: null,
+          sections: [],
+          end: null,
+          downloadTimeStart: null,
+          downloadTimeEnd: null,
+        }
+        ))
+        .catch(error => {
+          console.log(`Error from playlist meta endpoint: ${error}`);
+          errorMsg = 'Error, please try again';
+        })
+        .finally(() => {
+          this.setState({
+            downloading: false,
+            errorMessage: errorMsg,
+          });
+        });
+    }
     event.preventDefault();
   }
 
   handleDownloadEntireVideo(event) {
-    this.downloadFromServer(this.state.videoInfo.title);
+    this.downloadVideoFromServer(this.state.title, this.state.fetchedVideoId);
     event.preventDefault();
   }
 
   handleDownloadTimeRange(event) {
-    let filename = `${this.state.videoInfo.title}_range`;
-    this.downloadFromServer(
+    let filename = `${this.state.title}_range`;
+    this.downloadVideoFromServer(
       filename,
+      this.state.fetchedVideoId,
       [
         {
           start: this.state.downloadTimeStart / 1000.0, // convert start/end from millis to seconds
@@ -226,13 +309,21 @@ class StartForm extends React.Component {
   handleDownloadSections(event) {
     let selectedSections = this.state.sections.filter(t => t.selected);
     let filename = selectedSections.length > 1
-      ? this.state.videoInfo.title
+      ? this.state.title
       : selectedSections[0].name;
-    this.downloadFromServer(filename, selectedSections);
+    this.downloadVideoFromServer(filename, this.state.fetchedVideoId, selectedSections);
+  }
+
+  handleDownloadSelectedPlaylistVideos(event) {
+    let selectedVideos = this.state.playlistVideos.filter(t => t.selected);
+    let filename = selectedVideos.length > 1
+      ? this.state.title
+      : selectedVideos[0].title;
+    this.downloadVideosFromServer(filename, selectedVideos.map(v => v.id));
   }
 
   handleDownloadSection(section) {
-    this.downloadFromServer(section.name, [section]);
+    this.downloadVideoFromServer(section.name, this.state.fetchedVideoId, [section]);
   }
 
   onSectionSelectedChange(event) {
@@ -240,6 +331,17 @@ class StartForm extends React.Component {
     let index = event.target.getAttribute("index");
     sections[index].selected = event.target.checked;
     this.setState({ sections: sections });
+  }
+
+  onPlaylistVideoSelectedChange(event) {
+    let videos = this.state.playlistVideos;
+    let index = event.target.getAttribute("index");
+    videos[index].selected = event.target.checked;
+    this.setState({ playlistVideos: videos });
+  }
+
+  handleDownloadPlaylistVideo(video) {
+    this.downloadVideoFromServer(video.title, video.id);
   }
 
   onMediaTypeChanged(event) {
@@ -283,8 +385,20 @@ class StartForm extends React.Component {
     this.setState({ sections: sections });
   }
 
+  onAllPlaylistVideosSelectedChange(event) {
+    let videos = this.state.playlistVideos;
+    videos.forEach(v => v.selected = event.target.checked);
+    this.setState({ playlistVideos: videos });
+  }
+
   nullIfNoSections(element) {
     return this.state.sections.length > 0
+      ? element
+      : null;
+  }
+
+  nullIfNoPlaylistVideos(element) {
+    return this.state.playlistVideos?.length > 0
       ? element
       : null;
   }
@@ -295,26 +409,27 @@ class StartForm extends React.Component {
       <button
         id="submitBtn"
         type="submit"
-        disabled={!this.state.videoId}
+        disabled={!(this.state.videoId || this.state.playlistId)}
         // show glowing animation if valid video is entered and hasn't been fetched yet
         style={{
-          animation: this.state.videoId && this.state.fetchedVideoId !== this.state.videoId
+          animation: (this.state.videoId && this.state.fetchedVideoId !== this.state.videoId) ||
+            (this.state.playlistId && this.state.fetchedPlaylistId !== this.state.playlistId)
             ? 'glowing 1300ms infinite'
             : 'none',
           // gray-out the button to make it clear when it's disabled 
-          'backgroundColor': !this.state.videoId || this.state.downloading ? '#636965' : '#2ba805'
+          'backgroundColor': !(this.state.videoId || this.state.playlistId) || this.state.downloading ? '#636965' : '#2ba805'
         }}
         onClick={this.handleSubmit}>
         Submit
       </button>);
     let errorLabel = (<label>{this.state.errorMessage}</label>);
-    let selectAllInput = this.nullIfNoSections(
+    let selectAllSectionsInput = this.nullIfNoSections(
       <input checked={this.state.sections.every(t => t.selected)}
         onChange={this.onAllSectionsSelectedChange}
         type="checkbox"
         name="changeAllSelection"
         id="changeAllSelection" />);
-    let selectAllInputLabel = this.nullIfNoSections(
+    let selectAllSectionsInputLabel = this.nullIfNoSections(
       <label htmlFor="changeAllSelection">Select / unselect all sections</label>
     );
     let sectionsList = (
@@ -345,7 +460,41 @@ class StartForm extends React.Component {
           onClick={this.handleDownloadSections}>
           Download selected sections
         </button>));
-    let videoTitleLabel = null;
+    let downloadPlaylistVideosBtn = this.nullIfNoPlaylistVideos(
+      <button
+        type="button"
+        disabled={!this.state.playlistVideos?.some(s => s.selected)}
+        onClick={this.handleDownloadSelectedPlaylistVideos}>
+        Download selected videos
+      </button>);
+    let playlistVideosList = (
+      <ul>
+        {
+          this.state.playlistVideos?.map((video, index) => (
+            <li
+              style={{ listStyleType: "none" }}
+              key={index}>
+              <PlaylistVideo
+                index={index}
+                video={video}
+                onSelectedChange={this.onPlaylistVideoSelectedChange}
+                onDownloadPlaylistVideo={this.handleDownloadPlaylistVideo}
+              />
+            </li>
+          ))
+        }
+      </ul>
+    );
+    let selectAllPlaylistVideosInput = this.nullIfNoPlaylistVideos(
+      <input checked={this.state.playlistVideos?.every(t => t.selected)}
+        onChange={this.onAllPlaylistVideosSelectedChange}
+        type="checkbox"
+        name="changeAllSelection"
+        id="changeAllSelection" />);
+    let selectAllPlaylistVideosInputLabel = this.nullIfNoPlaylistVideos(
+      <label htmlFor="changeAllSelection">Select / unselect all videos</label>
+    );
+    let titleLabel = null;
     let videoDisplay = null;
     let downloadFullBtn = null;
     let mediaTypeSelector = null;
@@ -354,12 +503,13 @@ class StartForm extends React.Component {
     let reflectionInput = null;
     let playbackSpeedInput = null;
     let blackAndWhiteInput = null;
-    if (this.state.fetchedVideoId != null) {
-      videoTitleLabel = (
+
+    // initialize controls only used for individual videos
+    if (this.state.fetchedVideoId && !this.state.fetchedPlaylistId) {
+      titleLabel = (
         <div>
-          <label>Video:     </label>
           <label style={{ fontStyle: 'italic' }}>
-            {this.state.videoInfo.title}
+            Video: {this.state.title}
           </label>
         </div>
       );
@@ -418,7 +568,7 @@ class StartForm extends React.Component {
         <Slider range
           id="timerange"
           min={0}
-          max={this.state.videoInfo.end}
+          max={this.state.end}
           value={[this.state.downloadTimeStart, this.state.downloadTimeEnd]}
           style={{ marginTop: 16, width: `${ytPreviewWidth}px` }}
           step={50}
@@ -469,6 +619,27 @@ class StartForm extends React.Component {
         );
       }
     }
+
+    // initialize controls only used for playlists
+    if (!this.state.fetchedVideoId && this.state.fetchedPlaylistId) {
+      titleLabel = (
+        <div>
+          <label style={{ fontStyle: 'italic' }}>
+            Playlist: {this.state.title}
+          </label>
+        </div>
+      );
+      mediaTypeSelector = (
+        <div>
+          <label>Download type:</label>
+          <select onChange={this.onMediaTypeChanged}>
+            <option value="video">Video</option>
+            <option value="audio">Audio</option>
+          </select>
+        </div>
+      );
+    }
+
     return (
       <form>
         <Row>
@@ -494,7 +665,7 @@ class StartForm extends React.Component {
           <Col span={24}>{errorLabel}</Col>
         </Row>
         <Row>
-          <Col span={24}>{videoTitleLabel}</Col>
+          <Col span={24}>{titleLabel}</Col>
         </Row>
         <Row>
           <Col span={24}>{videoDisplay}</Col>
@@ -515,10 +686,19 @@ class StartForm extends React.Component {
           <Col span={24}>{downloadSectionsBtn}</Col>
         </Row>
         <Row>
-          <Col span={24}>{selectAllInput}{selectAllInputLabel}</Col>
+          <Col span={24}>{selectAllSectionsInput}{selectAllSectionsInputLabel}</Col>
         </Row>
         <Row>
           <Col span={24}>{sectionsList}</Col>
+        </Row>
+        <Row>
+          <Col span={24}>{downloadPlaylistVideosBtn}</Col>
+        </Row>
+        <Row>
+          <Col span={24}>{selectAllPlaylistVideosInput}{selectAllPlaylistVideosInputLabel}</Col>
+        </Row>
+        <Row>
+          <Col span={24}>{playlistVideosList}</Col>
         </Row>
       </form>
     );

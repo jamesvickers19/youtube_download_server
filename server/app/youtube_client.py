@@ -13,8 +13,12 @@ from yt_dlp import YoutubeDL
 temp_dir = "C:\\Users\\james\\AppData\\Local\\Temp\\" if platform.system() == 'Windows' else "/tmp/"
 
 
-def youtube_url(video_id):
+def youtube_video_url(video_id):
     return f"https://youtube.com/watch?v={video_id}"
+
+
+def youtube_playlist_url(playlist_id):
+    return f"https://youtube.com/playlist?list={playlist_id}"
 
 
 def try_delete_file(filename):
@@ -51,23 +55,33 @@ def sections_to_download_ranges(sections):
             for s in sections]
 
 
-def get_meta(video_id):
+def get_video_meta(video_id):
     with YoutubeDL() as ydl:
-        info = ydl.extract_info(youtube_url(video_id), download=False)
+        info = ydl.extract_info(youtube_video_url(video_id), download=False)
         return {'title': info['title'],
-                'length': info['duration'],
+                'duration': info.get('duration', None),
                 'sections': [{'start': c['start_time'], 'end': c['end_time'], 'name': c['title']}
                              for c in (info['chapters'] or [])]}
+
+
+def get_playlist_meta(playlist_id):
+    ytdl_params = {'extract_flat': True}
+    with YoutubeDL(ytdl_params) as ydl:
+        info = ydl.extract_info(youtube_playlist_url(playlist_id), download=False)
+        return {'title': info['title'],
+                'playlistVideos': info.get('entries')}
 
 
 def find_files(filename):
     return glob.glob(f"{temp_dir}{filename}*")
 
 
-def download(video_id: str,
-             sections: List[Section],
-             media_type: str,
-             processing: ProcessingParameters) -> str:
+def download_video(video_id: str,
+                   media_type: str,
+                   sections=None,
+                   processing: ProcessingParameters = None) -> str:
+    if sections is None:
+        sections = []
     ytdl_params = {
         # for audio, prefer m4a or mp4 if available since mobile devices can play
         # those but not e.g. webm
@@ -83,7 +97,7 @@ def download(video_id: str,
         ytdl_params['outtmpl'] = f"{temp_dir}{file_id}.%(ext)s"
     processing_required = processing is not None or download_as_gif
     with YoutubeDL(ytdl_params) as ytdl:
-        error = ytdl.download([youtube_url(video_id)])
+        error = ytdl.download([youtube_video_url(video_id)])
         if len(sections) > 1:
             filenames = find_files(file_id)
             zip_filename = f"{temp_dir}files.zip"
@@ -104,6 +118,32 @@ def download(video_id: str,
             main_filename = do_processing(main_filename, download_as_gif, processing)
         return main_filename
 
+
+def download_videos(video_ids: List[str], media_type: str) -> str:
+    if len(video_ids) == 1:
+        return download_video(video_ids[0], media_type=media_type)
+
+    filenames = []
+    for video_id in video_ids:
+        file_id = uuid.uuid4()
+        ytdl_params = {
+            # for audio, prefer m4a or mp4 if available since mobile devices can play
+            # those but not e.g. webm
+            'format': 'bestaudio[ext=m4a]/bestaudio[ext=mp3]/bestaudio' if media_type == 'audio' else 'best',
+            'outtmpl': f"{temp_dir}{file_id}_%(title)s.%(ext)s"
+        }
+        with YoutubeDL(ytdl_params) as ytdl:
+            error = ytdl.download([youtube_video_url(video_id)])
+            filenames.append(find_files(file_id)[0])
+    zip_filename = f"{temp_dir}files.zip"
+    filename_prefix_len = len(f"{uuid.uuid4()}_")
+    with ZipFile(zip_filename, 'w') as zip_file:
+        for f in filenames:
+            video_title = Path(f).stem[filename_prefix_len:].replace(" ", "_")
+            zip_file.write(f, arcname=f"{video_title}{Path(f).suffix}")
+            try_delete_file(f)
+    return zip_filename
+
 # get_meta('1pi9t3dnAXs')
 
 # # download example
@@ -114,3 +154,15 @@ def download(video_id: str,
 #    info = ydl.extract_info(youtube_url('1pi9t3dnAXs'), download=False)
 #    ydl.list_formats(info)
 #
+
+# https://www.youtube.com/watch?v=BjbX-o8w9k8
+# https://www.youtube.com/playlist?list=PLxA687tYuMWhDQXyn_kRwBJRwkDA3FQF1
+# with YoutubeDL({'extract_flat': True}) as ydl:
+#    info = ydl.extract_info('https://www.google.com', download=False)
+#    print(f"info: {info}")
+#    #ydl.list_formats(info)
+#
+
+# info has 'entries', an array of dicts each with
+# 'id' (video id), 'url', 'title', 'duration' (int seconds)
+# when not a playlist, there is no 'entries' key in info

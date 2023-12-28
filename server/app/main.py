@@ -5,7 +5,7 @@ from models import ProcessingParameters, Section
 import os
 from pydantic import BaseModel
 from typing import List
-from youtube_client import download, get_meta
+from youtube_client import download_video, download_videos, get_playlist_meta, get_video_meta
 
 app = FastAPI()
 
@@ -17,9 +17,14 @@ def try_delete_file(filename):
         print(ex)
 
 
-@app.get('/meta/{video_id}')
+@app.get('/video_meta/{video_id}')
 def get_meta_for_video(video_id):
-    return get_meta(video_id)
+    return get_video_meta(video_id)
+
+
+@app.get('/playlist_meta/{playlist_id}')
+def get_meta_for_playlist(playlist_id):
+    return get_playlist_meta(playlist_id)
 
 
 def get_extension(filename):
@@ -27,12 +32,12 @@ def get_extension(filename):
     return extension
 
 
-@app.options('/download')
+@app.options('/download_video')
 def download_video_by_id_options():
     return ''
 
 
-class DownloadRequest(BaseModel):
+class DownloadVideoRequest(BaseModel):
     video_id: str
     filename: str
     media_type: str
@@ -40,13 +45,13 @@ class DownloadRequest(BaseModel):
     processing: ProcessingParameters = None
 
 
-@app.post('/download')
-def download_video_by_id(request: DownloadRequest, background_tasks: BackgroundTasks):
+@app.post('/download_video')
+def download_video_by_id(request: DownloadVideoRequest, background_tasks: BackgroundTasks):
     # Download video
-    downloaded_file = download(
+    downloaded_file = download_video(
         video_id=request.video_id,
-        sections=request.sections,
         media_type=request.media_type,
+        sections=request.sections,
         processing=request.processing)
     # Cleanup downloaded file after the request
     background_tasks.add_task(try_delete_file, downloaded_file)
@@ -60,6 +65,34 @@ def download_video_by_id(request: DownloadRequest, background_tasks: BackgroundT
 
     download_name = f"{request.filename.replace(' ', '_')}.{extension}"
     return FileResponse(path=downloaded_file, filename=download_name, media_type=mimetype)
+
+
+@app.options('/download_videos')
+def download_videos_by_ids_options():
+    return ''
+
+
+class DownloadVideosRequest(BaseModel):
+    video_ids: List[str]
+    filename: str
+    media_type: str
+
+
+@app.post('/download_videos')
+def download_videos_by_ids(request: DownloadVideosRequest, background_tasks: BackgroundTasks):
+    # Download videos
+    downloaded_file = download_videos(video_ids=request.video_ids, media_type=request.media_type)
+    # Cleanup downloaded file after the request
+    background_tasks.add_task(try_delete_file, downloaded_file)
+    extension = get_extension(downloaded_file)[1:]  # leave off the starting . in the extension
+    if len(request.video_ids) > 0:
+        mimetype = "application/zip"
+    else:
+        mimetype = f"{request.media_type}/{extension}"
+
+    download_name = f"{request.filename.replace(' ', '_')}.{extension}"
+    return FileResponse(path=downloaded_file, filename=download_name, media_type=mimetype)
+
 
 
 # This has to be after route definitions or apparently it overrides
