@@ -547,13 +547,15 @@ class StartForm extends React.Component {
           Download full
         </button>
       );
+      // <option value="gif">GIF</option>
+      // leaving out for now because it's hard to use,
+      // and anything over a few seconds can crash the server.
       mediaTypeSelector = (
         <div>
           <label>Download type:</label>
           <select onChange={this.onMediaTypeChanged}>
             <option value="video">Video</option>
             <option value="audio">Audio</option>
-            {this.state.sections?.length > 0 ? null : <option value="gif">GIF</option>}
           </select>
         </div>
       );
@@ -629,6 +631,9 @@ class StartForm extends React.Component {
           </label>
         </div>
       );
+      // <option value="gif">GIF</option>
+      // leaving out for now because it's hard to use,
+      // and anything over a few seconds can crash the server.
       mediaTypeSelector = (
         <div>
           <label>Download type:</label>
