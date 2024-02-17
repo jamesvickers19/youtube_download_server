@@ -553,7 +553,7 @@ class StartForm extends React.Component {
           <select onChange={this.onMediaTypeChanged}>
             <option value="video">Video</option>
             <option value="audio">Audio</option>
-            <option value="gif">GIF</option>
+            {this.state.sections?.length > 0 ? null : <option value="gif">GIF</option>}
           </select>
         </div>
       );
