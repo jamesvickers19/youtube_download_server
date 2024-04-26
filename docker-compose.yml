@@ -5,12 +5,14 @@ version: "3.3"
 services:
   server:
     build: server
+    restart: always
     ports:
       - "8080:8080"
     volumes:
-      - ./server/app/frontend:/app/frontend # TODO this right?
+      - ./server/app/frontend:/app/frontend
   nginx:
     image: nginx:alpine
+    restart: always
     # auto-renew certificate
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
     volumes:
@@ -22,6 +24,7 @@ services:
       - "443:443"
   certbot:
     image: certbot/certbot
+    restart: always
     # auto-renew certificate
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
     volumes:
