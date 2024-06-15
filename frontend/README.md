@@ -1,3 +1,3 @@
 # Developing frontend against deployed server
 
-Change variable `devMode` to true at top of [./src/index.js] and run `npm start`.
+Go to [this site](https://cors-anywhere.herokuapp.com/https://youtubeslicer.com/) and hit enable, then run `npm start-dev`.

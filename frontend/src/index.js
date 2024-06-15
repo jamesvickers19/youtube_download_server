@@ -14,12 +14,11 @@ import reportWebVitals from './reportWebVitals';
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
 
-let devMode = false;
-let serverHost = ''; // production
-if (devMode) {
-  // local development; must enable at this site
-  serverHost = 'https://cors-anywhere.herokuapp.com/https://youtubeslicer.com/';
-}
+const devMode = process.env.REACT_APP_DEV_MODE === "true";
+const serverHost = devMode
+  // local development to pass through to deployed server; must go to this site and enable it
+  ? 'https://cors-anywhere.herokuapp.com/https://youtubeslicer.com/'
+  : '';
 
 function download(blob, name) {
   const link = document.createElement('a');
