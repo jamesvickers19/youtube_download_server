@@ -645,66 +645,78 @@ class StartForm extends React.Component {
     }
 
     return (
-      <form>
-        <Row>
-          <Col span={24}>
-            <label style={{ fontSize: '30px' }}>Enter a YouTube link:</label>
-          </Col>
-        </Row>
-        <Row>
-          <Col span={24}>{urlInput}</Col>
-        </Row>
-        <br />
-        <Row>
-          <Col span={24}>{this.state.downloading
-            ? (<ThreeCircles
-              height="25"
-              width="25"
-              color="#4fa94d"
-              visible={true} />)
-            : submitBtn}
-          </Col>
-        </Row>
-        <Row>
-          <Col span={24}>{errorLabel}</Col>
-        </Row>
-        <Row>
-          <Col span={24}>{titleLabel}</Col>
-        </Row>
-        <Row>
-          <Col span={24}>{videoDisplay}</Col>
-        </Row>
-        <Row>
-          <Col span={24}>{timeRangeInput}</Col>
-        </Row>
-        <Row>
-          <Col span={24}>{downloadTimeRangeBtn}</Col>
-        </Row>
-        <Row>
-          <Col span={24}>{downloadFullBtn}{mediaTypeSelector}{reflectionInput}</Col>
-        </Row>
-        <Row>
-          <Col span={24}>{playbackSpeedInput}{blackAndWhiteInput}</Col>
-        </Row>
-        <Row>
-          <Col span={24}>{downloadSectionsBtn}</Col>
-        </Row>
-        <Row>
-          <Col span={24}>{selectAllSectionsInput}{selectAllSectionsInputLabel}</Col>
-        </Row>
-        <Row>
-          <Col span={24}>{sectionsList}</Col>
-        </Row>
-        <Row>
-          <Col span={24}>{downloadPlaylistVideosBtn}</Col>
-        </Row>
-        <Row>
-          <Col span={24}>{selectAllPlaylistVideosInput}{selectAllPlaylistVideosInputLabel}</Col>
-        </Row>
-        <Row>
-          <Col span={24}>{playlistVideosList}</Col>
-        </Row>
-      </form>
+      <>
+        <form>
+          <Row>
+            <Col span={24}>
+              <label style={{ fontSize: '30px' }}>Enter a YouTube link:</label>
+            </Col>
+          </Row>
+          <Row>
+            <Col span={24}>{urlInput}</Col>
+          </Row>
+          <br />
+          <Row>
+            <Col span={24}>{this.state.downloading
+              ? (<ThreeCircles
+                height="25"
+                width="25"
+                color="#4fa94d"
+                visible={true} />)
+              : submitBtn}
+            </Col>
+          </Row>
+          <Row>
+            <Col span={24}>{errorLabel}</Col>
+          </Row>
+          <Row>
+            <Col span={24}>{titleLabel}</Col>
+          </Row>
+          <Row>
+            <Col span={24}>{videoDisplay}</Col>
+          </Row>
+          <Row>
+            <Col span={24}>{timeRangeInput}</Col>
+          </Row>
+          <Row>
+            <Col span={24}>{downloadTimeRangeBtn}</Col>
+          </Row>
+          <Row>
+            <Col span={24}>{downloadFullBtn}{mediaTypeSelector}{reflectionInput}</Col>
+          </Row>
+          <Row>
+            <Col span={24}>{playbackSpeedInput}{blackAndWhiteInput}</Col>
+          </Row>
+          <Row>
+            <Col span={24}>{downloadSectionsBtn}</Col>
+          </Row>
+          <Row>
+            <Col span={24}>{selectAllSectionsInput}{selectAllSectionsInputLabel}</Col>
+          </Row>
+          <Row>
+            <Col span={24}>{sectionsList}</Col>
+          </Row>
+          <Row>
+            <Col span={24}>{downloadPlaylistVideosBtn}</Col>
+          </Row>
+          <Row>
+            <Col span={24}>{selectAllPlaylistVideosInput}{selectAllPlaylistVideosInputLabel}</Col>
+          </Row>
+          <Row>
+            <Col span={24}>{playlistVideosList}</Col>
+          </Row>
+        </form>
+        <hr />
+        <p>
+          <a
+            href="https://www.paypal.com/ncp/payment/LJT5QYAJ62V8L"
+            style={{ fontSize: '30px' }}
+            target="_blank"
+            rel="noopener noreferrer">
+            Support the site ❤️
+          </a>
+        </p>
+      </>
     );
   }
 }
