@@ -8,6 +8,7 @@ import VideoSection from './VideoSection'
 import PlaylistVideo from './PlaylistVideo'
 import YouTube from 'react-youtube';
 import reportWebVitals from './reportWebVitals';
+import { fetchRetry } from './fetchRetry';
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
@@ -158,7 +159,7 @@ class StartForm extends React.Component {
       errorMessage: errorMsg,
       downloading: true
     });
-    fetch(`${serverHost}download_video`, requestParams)
+    fetchRetry(`${serverHost}download_video`, requestParams)
       .then(response => {
         const header = response.headers.get('Content-Disposition');
         const parts = header.split(';');
@@ -192,7 +193,7 @@ class StartForm extends React.Component {
       errorMessage: errorMsg,
       downloading: true
     });
-    fetch(`${serverHost}download_videos`, requestParams)
+    fetchRetry(`${serverHost}download_videos`, requestParams)
       .then(response => {
         const header = response.headers.get('Content-Disposition');
         const parts = header.split(';');
@@ -220,7 +221,7 @@ class StartForm extends React.Component {
     });
     if (this.state.videoId) {
       let fetchedVideoId = this.state.videoId;
-      fetch(`${serverHost}video_meta/${fetchedVideoId}`)
+      fetchRetry(`${serverHost}video_meta/${fetchedVideoId}`)
         .then(response => response.json())
         .then(data => this.setState({
           title: data.title,
@@ -246,7 +247,7 @@ class StartForm extends React.Component {
     }
     else if (this.state.playlistId) {
       let fetchedPlaylistId = this.state.playlistId;
-      fetch(`${serverHost}playlist_meta/${fetchedPlaylistId}`)
+      fetchRetry(`${serverHost}playlist_meta/${fetchedPlaylistId}`)
         .then(response => response.json())
         .then(data => this.setState({
           title: data.title,
