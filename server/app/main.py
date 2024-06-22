@@ -6,8 +6,14 @@ import os
 from pydantic import BaseModel
 from typing import List
 from youtube_client import download_video, download_videos, get_playlist_meta, get_video_meta
+import re
 
 app = FastAPI()
+
+
+def sanitize_filename(filename):
+    # Replace any non-alphanumeric characters (except dot, dash, and underscore) with underscore
+    return re.sub(r'[^a-zA-Z0-9._-]', '_', filename)
 
 
 def try_delete_file(filename):
@@ -63,7 +69,7 @@ def download_video_by_id(request: DownloadVideoRequest, background_tasks: Backgr
     else:
         mimetype = "image/gif"
 
-    download_name = f"{request.filename.replace(' ', '_')}.{extension}"
+    download_name = f"{sanitize_filename(request.filename)}.{extension}"
     return FileResponse(path=downloaded_file, filename=download_name, media_type=mimetype)
 
 
@@ -90,9 +96,8 @@ def download_videos_by_ids(request: DownloadVideosRequest, background_tasks: Bac
     else:
         mimetype = f"{request.media_type}/{extension}"
 
-    download_name = f"{request.filename.replace(' ', '_')}.{extension}"
+    download_name = f"{sanitize_filename(request.filename)}.{extension}"
     return FileResponse(path=downloaded_file, filename=download_name, media_type=mimetype)
-
 
 
 # This has to be after route definitions or apparently it overrides
