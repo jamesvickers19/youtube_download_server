@@ -717,6 +717,8 @@ class StartForm extends React.Component {
             Support the site ❤️
           </a>
         </p>
+        <br />
+        <a style={{ fontSize: '20px' }} href="mailto:lambdatallc@gmail.com"> Contact Us </a>
       </>
     );
   }
