@@ -660,8 +660,8 @@ class StartForm extends React.Component {
           <Row>
             <Col span={24}>{this.state.downloading
               ? (<ThreeCircles
-                height="25"
-                width="25"
+                height="50"
+                width="50"
                 color="#4fa94d"
                 visible={true} />)
               : submitBtn}
