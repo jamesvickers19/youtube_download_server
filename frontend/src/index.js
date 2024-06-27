@@ -223,17 +223,22 @@ class StartForm extends React.Component {
       let fetchedVideoId = this.state.videoId;
       fetchRetry(`${serverHost}video_meta/${fetchedVideoId}`)
         .then(response => response.json())
-        .then(data => this.setState({
-          title: data.title,
-          end: data.duration * 1000, // milliseconds
-          downloadTimeStart: 0,
-          downloadTimeEnd: data.duration * 1000.0,
-          sections: data.sections.map(t => ({ ...t, selected: true })),
-          fetchedVideoId: fetchedVideoId,
-          fetchedPlaylistId: null,
-          playlistVideos: null,
-        }
-        ))
+        .then(data => {
+          if (data.isLive || data.wasLive) {
+            errorMsg = "Live videos are not supported, sorry";
+          }
+
+          this.setState({
+            title: data.title,
+            end: data.duration * 1000, // milliseconds
+            downloadTimeStart: 0,
+            downloadTimeEnd: data.duration * 1000.0,
+            sections: data.sections.map(t => ({ ...t, selected: true })),
+            fetchedVideoId: fetchedVideoId,
+            fetchedPlaylistId: null,
+            playlistVideos: null,
+          });
+        })
         .catch(error => {
           console.log(`Error from video meta endpoint: ${error}`);
           errorMsg = 'Error, please try again';
@@ -673,39 +678,42 @@ class StartForm extends React.Component {
           <Row>
             <Col span={24}>{titleLabel}</Col>
           </Row>
-          <Row>
-            <Col span={24}>{videoDisplay}</Col>
-          </Row>
-          <Row>
-            <Col span={24}>{timeRangeInput}</Col>
-          </Row>
-          <Row>
-            <Col span={24}>{downloadTimeRangeBtn}</Col>
-          </Row>
-          <Row>
-            <Col span={24}>{downloadFullBtn}{mediaTypeSelector}{reflectionInput}</Col>
-          </Row>
-          <Row>
-            <Col span={24}>{playbackSpeedInput}{blackAndWhiteInput}</Col>
-          </Row>
-          <Row>
-            <Col span={24}>{downloadSectionsBtn}</Col>
-          </Row>
-          <Row>
-            <Col span={24}>{selectAllSectionsInput}{selectAllSectionsInputLabel}</Col>
-          </Row>
-          <Row>
-            <Col span={24}>{sectionsList}</Col>
-          </Row>
-          <Row>
-            <Col span={24}>{downloadPlaylistVideosBtn}</Col>
-          </Row>
-          <Row>
-            <Col span={24}>{selectAllPlaylistVideosInput}{selectAllPlaylistVideosInputLabel}</Col>
-          </Row>
-          <Row>
-            <Col span={24}>{playlistVideosList}</Col>
-          </Row>
+          {this.state.errorMessage ? null :
+            (<>
+              <Row>
+                <Col span={24}>{videoDisplay}</Col>
+              </Row>
+              <Row>
+                <Col span={24}>{timeRangeInput}</Col>
+              </Row>
+              <Row>
+                <Col span={24}>{downloadTimeRangeBtn}</Col>
+              </Row>
+              <Row>
+                <Col span={24}>{downloadFullBtn}{mediaTypeSelector}{reflectionInput}</Col>
+              </Row>
+              <Row>
+                <Col span={24}>{playbackSpeedInput}{blackAndWhiteInput}</Col>
+              </Row>
+              <Row>
+                <Col span={24}>{downloadSectionsBtn}</Col>
+              </Row>
+              <Row>
+                <Col span={24}>{selectAllSectionsInput}{selectAllSectionsInputLabel}</Col>
+              </Row>
+              <Row>
+                <Col span={24}>{sectionsList}</Col>
+              </Row>
+              <Row>
+                <Col span={24}>{downloadPlaylistVideosBtn}</Col>
+              </Row>
+              <Row>
+                <Col span={24}>{selectAllPlaylistVideosInput}{selectAllPlaylistVideosInputLabel}</Col>
+              </Row>
+              <Row>
+                <Col span={24}>{playlistVideosList}</Col>
+              </Row>
+            </>)}
         </form>
         <hr />
         <p>
