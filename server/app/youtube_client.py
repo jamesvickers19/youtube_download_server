@@ -100,7 +100,7 @@ def download_video(video_id: str,
         error = ytdl.download([youtube_video_url(video_id)])
         if len(sections) > 1:
             filenames = find_files(file_id)
-            zip_filename = f"{temp_dir}files.zip"
+            zip_filename = f"{temp_dir}{filename_prefix}files.zip"
             with ZipFile(zip_filename, 'w') as zip_file:
                 processed_filenames = []
                 for f in filenames:
@@ -135,7 +135,7 @@ def download_videos(video_ids: List[str], media_type: str) -> str:
         with YoutubeDL(ytdl_params) as ytdl:
             error = ytdl.download([youtube_video_url(video_id)])
             filenames.append(find_files(file_id)[0])
-    zip_filename = f"{temp_dir}files.zip"
+    zip_filename = f"{temp_dir}{uuid.uuid4()}_files.zip"
     filename_prefix_len = len(f"{uuid.uuid4()}_")
     with ZipFile(zip_filename, 'w') as zip_file:
         for f in filenames:
@@ -144,15 +144,15 @@ def download_videos(video_ids: List[str], media_type: str) -> str:
             try_delete_file(f)
     return zip_filename
 
-# get_meta('1pi9t3dnAXs')
+
+# m = get_video_meta('WLzqIuk5684')
 
 # # download example
 # d = download(video_id='2dNGPkoDzh0', sections=[], media_type='gif', processing=None)
 # print(f"d: {d}")
 
 # with YoutubeDL() as ydl:
-#    info = ydl.extract_info(youtube_url('1pi9t3dnAXs'), download=False)
-#    ydl.list_formats(info)
+#    info = ydl.extract_info(youtube_video_url('WLzqIuk5684'), download=False)
 #
 
 # https://www.youtube.com/watch?v=BjbX-o8w9k8
