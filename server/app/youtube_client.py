@@ -60,6 +60,8 @@ def get_video_meta(video_id):
         info = ydl.extract_info(youtube_video_url(video_id), download=False)
         return {'title': info['title'],
                 'duration': info.get('duration', None),
+                'isLive': info.get('is_live', False),
+                'wasLive': info.get('was_live', False),
                 'sections': [{'start': c['start_time'], 'end': c['end_time'], 'name': c['title']}
                              for c in (info['chapters'] or [])]}
 
