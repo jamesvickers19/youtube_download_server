@@ -409,7 +409,12 @@ class StartForm extends React.Component {
   }
 
   render() {
-    let urlInput = (<input id="urlInput" type="text" onChange={this.handleVideoUrlInputChange} />);
+    let urlInput = (
+      <input
+        id="urlInput"
+        disabled={this.state.downloading}
+        type="text"
+        onChange={this.handleVideoUrlInputChange} />);
     let submitBtn = (
       <button
         id="submitBtn"
