@@ -414,7 +414,7 @@ class StartForm extends React.Component {
       <button
         id="submitBtn"
         type="submit"
-        disabled={!(this.state.videoId || this.state.playlistId)}
+        disabled={!(this.state.videoId || this.state.playlistId) || this.state.downloading}
         // show glowing animation if valid video is entered and hasn't been fetched yet
         style={{
           animation: (this.state.videoId && this.state.fetchedVideoId !== this.state.videoId) ||
@@ -427,6 +427,14 @@ class StartForm extends React.Component {
         onClick={this.handleSubmit}>
         Submit
       </button>);
+    let loadingIndicator = (
+      <div id="loadingIndicator">
+        <ThreeCircles
+          height="350"
+          width="350"
+          color="#4fa94d"
+          visible={true} />
+      </div>);
     let errorLabel = (<label>{this.state.errorMessage}</label>);
     let selectAllSectionsInput = this.nullIfNoSections(
       <input checked={this.state.sections.every(t => t.selected)}
@@ -652,6 +660,7 @@ class StartForm extends React.Component {
 
     return (
       <>
+        {this.state.downloading ? loadingIndicator : null}
         <form>
           <Row>
             <Col span={24}>
@@ -663,14 +672,7 @@ class StartForm extends React.Component {
           </Row>
           <br />
           <Row>
-            <Col span={24}>{this.state.downloading
-              ? (<ThreeCircles
-                height="50"
-                width="50"
-                color="#4fa94d"
-                visible={true} />)
-              : submitBtn}
-            </Col>
+            <Col span={24}>{submitBtn}</Col>
           </Row>
           <Row>
             <Col span={24}>{errorLabel}</Col>
