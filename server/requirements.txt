@@ -1,7 +1,7 @@
 fastapi~=0.95.0
 pydantic>=1.8.0,<2.0.0
 uvicorn>=0.15.0,<0.16.0
-yt-dlp~=2023.7.6
+yt-dlp~=2024.7.9
 moviepy~=1.0.3
 opentelemetry-instrumentation-logging==0.46b0
 opentelemetry-instrumentation-fastapi==0.46b0
