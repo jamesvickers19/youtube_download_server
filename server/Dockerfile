@@ -14,9 +14,4 @@ RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
 COPY ./app /app
 
-ENV OTEL_SERVICE_NAME=youtube-downloader-server
-ENV OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-ENV OTEL_EXPORTER_OTLP_ENDPOINT="https://api.honeycomb.io"
-ENV OTEL_EXPORTER_OTLP_HEADERS="x-honeycomb-team=${HONEYCOMB_API_KEY}"
-
 CMD ["opentelemetry-instrument", "uvicorn", "main:app", "--proxy-headers", "--host", "0.0.0.0", "--port", "8080"]

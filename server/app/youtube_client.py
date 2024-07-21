@@ -10,7 +10,29 @@ from zipfile import ZipFile
 
 from yt_dlp import YoutubeDL
 
+
+def throw_if_env_not_set(var_name):
+    val = os.environ.get(var_name)
+    if val is None or len(val) == 0:
+        raise Exception(f"Environment variable {var_name} not set, val: {val}")
+    return val
+
+
 temp_dir = "C:\\Users\\james\\AppData\\Local\\Temp\\" if platform.system() == 'Windows' else "/tmp/"
+proxy_address = throw_if_env_not_set('PROXY_ADDRESS')
+proxy_user = throw_if_env_not_set('PROXY_USER')
+proxy_password = throw_if_env_not_set('PROXY_PASSWORD')
+
+
+def build_ytdl_params(ytdl_params=None):
+    if ytdl_params is None:
+        ytdl_params = {}
+    ytdl_params['proxy'] = f"https://{proxy_user}:{proxy_password}@{proxy_address}"
+    return ytdl_params
+
+
+def build_youtube_dl_client(ytdl_params=None):
+    return YoutubeDL(build_ytdl_params(ytdl_params))
 
 
 def youtube_video_url(video_id):
@@ -56,7 +78,7 @@ def sections_to_download_ranges(sections):
 
 
 def get_video_meta(video_id):
-    with YoutubeDL() as ydl:
+    with build_youtube_dl_client() as ydl:
         info = ydl.extract_info(youtube_video_url(video_id), download=False)
         return {'title': info['title'],
                 'duration': info.get('duration', None),
@@ -68,7 +90,7 @@ def get_video_meta(video_id):
 
 def get_playlist_meta(playlist_id):
     ytdl_params = {'extract_flat': True}
-    with YoutubeDL(ytdl_params) as ydl:
+    with build_youtube_dl_client(ytdl_params) as ydl:
         info = ydl.extract_info(youtube_playlist_url(playlist_id), download=False)
         return {'title': info['title'],
                 'playlistVideos': info.get('entries')}
@@ -98,7 +120,7 @@ def download_video(video_id: str,
     else:
         ytdl_params['outtmpl'] = f"{temp_dir}{file_id}.%(ext)s"
     processing_required = processing is not None or download_as_gif
-    with YoutubeDL(ytdl_params) as ytdl:
+    with build_youtube_dl_client(ytdl_params) as ytdl:
         error = ytdl.download([youtube_video_url(video_id)])
         if len(sections) > 1:
             filenames = find_files(file_id)
@@ -134,7 +156,7 @@ def download_videos(video_ids: List[str], media_type: str) -> str:
             'format': 'bestaudio[ext=m4a]/bestaudio[ext=mp3]/bestaudio' if media_type == 'audio' else 'best',
             'outtmpl': f"{temp_dir}{file_id}_%(title)s.%(ext)s"
         }
-        with YoutubeDL(ytdl_params) as ytdl:
+        with build_youtube_dl_client(ytdl_params) as ytdl:
             error = ytdl.download([youtube_video_url(video_id)])
             filenames.append(find_files(file_id)[0])
     zip_filename = f"{temp_dir}{uuid.uuid4()}_files.zip"
@@ -153,13 +175,13 @@ def download_videos(video_ids: List[str], media_type: str) -> str:
 # d = download(video_id='2dNGPkoDzh0', sections=[], media_type='gif', processing=None)
 # print(f"d: {d}")
 
-# with YoutubeDL() as ydl:
+# with build_youtube_dl_client() as ydl:
 #    info = ydl.extract_info(youtube_video_url('WLzqIuk5684'), download=False)
 #
 
 # https://www.youtube.com/watch?v=BjbX-o8w9k8
 # https://www.youtube.com/playlist?list=PLxA687tYuMWhDQXyn_kRwBJRwkDA3FQF1
-# with YoutubeDL({'extract_flat': True}) as ydl:
+# with build_youtube_dl_client({'extract_flat': True}) as ydl:
 #    info = ydl.extract_info('https://www.google.com', download=False)
 #    print(f"info: {info}")
 #    #ydl.list_formats(info)
