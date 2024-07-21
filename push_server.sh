@@ -4,10 +4,12 @@ set -e
 
 bash build_frontend.sh
 
-scp -r nginx root@143.198.76.231:/youtube-downloader/
+ADDRESS=142.93.8.222
 
-scp -r server/app root@143.198.76.231:/youtube-downloader/server
+scp -r nginx root@${ADDRESS}:/youtube-downloader/
 
-scp .env docker-compose.yml root@143.198.76.231:/youtube-downloader/
+scp -r server/app root@${ADDRESS}:/youtube-downloader/server/app
 
-scp server/Dockerfile server/requirements.txt root@143.198.76.231:/youtube-downloader/server
+scp .env docker-compose.yml redeploy_server.sh init-letsencrypt.sh root@${ADDRESS}:/youtube-downloader/
+
+scp server/Dockerfile server/requirements.txt root@${ADDRESS}:/youtube-downloader/server
