@@ -2,7 +2,7 @@
 
 set -e
 
-# bash build_frontend.sh
+bash build_frontend.sh
 
 ADDRESS=142.93.8.222
 
