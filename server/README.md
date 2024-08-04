@@ -16,3 +16,9 @@ Or with docker:
 ```bash
 docker build -t server . && docker run --rm -p 8080:8080 server
 ```
+
+Or with docker compose (in parent directory):
+
+```bash
+docker compose up -d --build
+```
