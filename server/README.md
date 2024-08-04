@@ -1,7 +1,7 @@
-# Run locally:
+# Run locally, from `app` folder; the variables come from the `.env` file in the parent directory
 
 ```commandline
-uvicorn main:app --proxy-headers --host 0.0.0.0 --port 8080
+PROXY_ADDRESS=something PROXY_USER=something PROXY_USER=password uvicorn main:app --proxy-headers --host 0.0.0.0 --port 8080
 ```
 
 # Run with OpenTelemetry to HoneyComb:
