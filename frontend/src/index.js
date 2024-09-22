@@ -599,6 +599,7 @@ class StartForm extends React.Component {
           <label>Download type:</label>
           <select onChange={this.onMediaTypeChanged}>
             <option value="video">Video</option>
+            <option value="best_video">Highest Quality Video</option>
             <option value="audio">Audio</option>
           </select>
         </div>
