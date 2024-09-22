@@ -64,10 +64,10 @@ def download_video_by_id(request: DownloadVideoRequest, background_tasks: Backgr
     extension = get_extension(downloaded_file)[1:]  # leave off the starting . in the extension
     if len(request.sections) > 0:
         mimetype = "application/zip"
-    elif request.media_type == 'audio' or request.media_type == 'video':
-        mimetype = f"{request.media_type}/{extension}"
-    else:
+    elif request.media_type == 'gif':
         mimetype = "image/gif"
+    else:
+        mimetype = f"{request.media_type}/{extension}"
 
     download_name = f"{sanitize_filename(request.filename)}.{extension}"
     return FileResponse(path=downloaded_file, filename=download_name, media_type=mimetype)
