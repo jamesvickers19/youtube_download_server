@@ -100,6 +100,18 @@ def find_files(filename):
     return glob.glob(f"{temp_dir}{filename}*")
 
 
+def ytdl_format_string(media_type: str):
+    # for audio, prefer m4a or mp4 if available since mobile devices can play
+    # those but not e.g. webm
+    if media_type == 'audio':
+        return 'bestaudio[ext=m4a]/bestaudio[ext=mp3]/bestaudio'
+    if media_type == 'best_video':
+        # get mp4 video, which is recognized better by e.g. iOS.
+        return 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4] / bv*+ba/b'
+    # 'best' seems to actually be pretty low quality videos, which are fast to download.
+    return 'best'
+
+
 def download_video(video_id: str,
                    media_type: str,
                    sections=None,
@@ -107,9 +119,7 @@ def download_video(video_id: str,
     if sections is None:
         sections = []
     ytdl_params = {
-        # for audio, prefer m4a or mp4 if available since mobile devices can play
-        # those but not e.g. webm
-        'format': 'bestaudio[ext=m4a]/bestaudio[ext=mp3]/bestaudio' if media_type == 'audio' else 'best'
+        'format': ytdl_format_string(media_type)
     }
     download_as_gif = media_type == 'gif'
     file_id = uuid.uuid4()
@@ -151,9 +161,7 @@ def download_videos(video_ids: List[str], media_type: str) -> str:
     for video_id in video_ids:
         file_id = uuid.uuid4()
         ytdl_params = {
-            # for audio, prefer m4a or mp4 if available since mobile devices can play
-            # those but not e.g. webm
-            'format': 'bestaudio[ext=m4a]/bestaudio[ext=mp3]/bestaudio' if media_type == 'audio' else 'best',
+            'format': ytdl_format_string(media_type),
             'outtmpl': f"{temp_dir}{file_id}_%(title)s.%(ext)s"
         }
         with build_youtube_dl_client(ytdl_params) as ytdl:
