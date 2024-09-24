@@ -105,9 +105,10 @@ def ytdl_format_string(media_type: str):
     # those but not e.g. webm
     if media_type == 'audio':
         return 'bestaudio[ext=m4a]/bestaudio[ext=mp3]/bestaudio'
-    if media_type == 'best_video':
-        # get mp4 video, which is recognized better by e.g. iOS.
-        return 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4] / bv*+ba/b'
+    # disabling this because it can cause very large videos and make the server run out of memory
+    # if media_type == 'best_video':
+    #     # get mp4 video, which is recognized better by e.g. iOS.
+    #     return 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4] / bv*+ba/b'
     # 'best' seems to actually be pretty low quality videos, which are fast to download.
     return 'best'
 
