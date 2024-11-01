@@ -28,6 +28,7 @@ def build_ytdl_params(ytdl_params=None):
     if ytdl_params is None:
         ytdl_params = {}
     ytdl_params['proxy'] = f"https://{proxy_user}:{proxy_password}@{proxy_address}"
+    ytdl_params['verbose'] = True
     return ytdl_params
 
 
