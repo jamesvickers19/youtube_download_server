@@ -724,12 +724,12 @@ class StartForm extends React.Component {
               <Row>
                 <Col span={24}>{videoDisplay}</Col>
               </Row>
-              {/* <Row>
+              <Row>
                 <Col span={24}>{timeRangeInput}</Col>
-              </Row> */}
-              {/* <Row>
+              </Row>
+              <Row>
                 <Col span={24}>{downloadTimeRangeBtn}</Col>
-              </Row> */}
+              </Row>
               <Row>
                 <Col span={24}>
                   {downloadFullBtn}
@@ -743,7 +743,7 @@ class StartForm extends React.Component {
                   {blackAndWhiteInput}
                 </Col>
               </Row>
-              {/* <Row>
+              <Row>
                 <Col span={24}>{downloadSectionsBtn}</Col>
               </Row>
               <Row>
@@ -754,7 +754,7 @@ class StartForm extends React.Component {
               </Row>
               <Row>
                 <Col span={24}>{sectionsList}</Col>
-              </Row> */}
+              </Row>
               <Row>
                 <Col span={24}>{downloadPlaylistVideosBtn}</Col>
               </Row>
