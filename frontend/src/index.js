@@ -734,15 +734,15 @@ class StartForm extends React.Component {
                 <Col span={24}>
                   {downloadFullBtn}
                   {mediaTypeSelector}
-                  {reflectionInput}
+                  {/* {reflectionInput} */}
                 </Col>
               </Row>
-              <Row>
+              {/* <Row>
                 <Col span={24}>
                   {playbackSpeedInput}
                   {blackAndWhiteInput}
                 </Col>
-              </Row>
+              </Row> */}
               <Row>
                 <Col span={24}>{downloadSectionsBtn}</Col>
               </Row>
