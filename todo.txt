@@ -1,0 +1,3 @@
+
+'processing' operations like reflect video or black/white results in video with no audio.
+
