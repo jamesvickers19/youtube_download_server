@@ -1,4 +1,6 @@
 import glob
+import subprocess
+
 from models import ProcessingParameters, Section
 from moviepy.editor import vfx, VideoFileClip
 import os
@@ -73,11 +75,6 @@ def do_processing(input_filename: str, as_gif: bool, processing: ProcessingParam
     return output_filename
 
 
-def sections_to_download_ranges(sections):
-    return [{'start_time': s.start, 'end_time': s.end, 'title': s.name.replace(' ', '_')}
-            for s in sections]
-
-
 def get_video_meta(video_id):
     with build_youtube_dl_client() as ydl:
         info = ydl.extract_info(youtube_video_url(video_id), download=False)
@@ -101,6 +98,24 @@ def find_files(filename):
     return glob.glob(f"{temp_dir}{filename}*")
 
 
+def cut_sections(input_file, filename_prefix, sections: List[Section]):
+    file_ext = os.path.splitext(input_file)[1]
+
+    for s in sections:
+        output_file = f"{temp_dir}{filename_prefix}{s.name.replace(' ', '_')}{file_ext}"
+        command = [
+            "ffmpeg", "-i", input_file,  # Input file
+            "-ss", str(s.start),  # Start time
+            "-t", str(s.end - s.start),  # Duration
+            "-y",  # do not ask for confirmation
+            "-avoid_negative_ts", "1",
+            "-acodec", "copy",
+            output_file  # Output file
+        ]
+
+        subprocess.run(command)
+
+
 def ytdl_format_string(media_type: str):
     # for audio, prefer m4a or mp4 if available since mobile devices can play
     # those but not e.g. webm
@@ -120,26 +135,25 @@ def download_video(video_id: str,
                    processing: ProcessingParameters = None) -> str:
     if sections is None:
         sections = []
-    ytdl_params = {
-        'format': ytdl_format_string(media_type)
-    }
-    download_as_gif = media_type == 'gif'
     file_id = uuid.uuid4()
     filename_prefix = f"{file_id}_"
-    if len(sections) > 0:
-        ytdl_params['outtmpl'] = temp_dir + filename_prefix + "%(section_title)s.%(ext)s"
-        ytdl_params['download_ranges'] = (lambda _1, _2: sections_to_download_ranges(sections))
-    else:
-        ytdl_params['outtmpl'] = f"{temp_dir}{file_id}.%(ext)s"
-    processing_required = processing is not None or download_as_gif
+    ytdl_params = {
+        'format': ytdl_format_string(media_type),
+        'outtmpl': f"{temp_dir}{filename_prefix}%(section_title)s.%(ext)s" if len(sections) > 0 else f"{temp_dir}{file_id}.%(ext)s"
+    }
+    download_as_gif = media_type == 'gif'
+    processing_required = (processing is not None and media_type == 'video') or download_as_gif
     with build_youtube_dl_client(ytdl_params) as ytdl:
         error = ytdl.download([youtube_video_url(video_id)])
         if len(sections) > 1:
-            filenames = find_files(file_id)
+            downloaded_filename = find_files(file_id)[0]
+            cut_sections(downloaded_filename, filename_prefix, sections)
+            try_delete_file(downloaded_filename)
+            files_to_zip = find_files(file_id)
             zip_filename = f"{temp_dir}{filename_prefix}files.zip"
             with ZipFile(zip_filename, 'w') as zip_file:
                 processed_filenames = []
-                for f in filenames:
+                for f in files_to_zip:
                     written_filename = f
                     if processing_required:
                         written_filename = do_processing(f, download_as_gif, processing)
