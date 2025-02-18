@@ -145,12 +145,16 @@ def download_video(video_id: str,
     processing_required = (processing is not None and media_type == 'video') or download_as_gif
     with build_youtube_dl_client(ytdl_params) as ytdl:
         error = ytdl.download([youtube_video_url(video_id)])
-        if len(sections) > 1:
+    downloaded_filename = find_files(file_id)[0]
+    if len(sections) > 0:
+        cut_sections(downloaded_filename, filename_prefix, sections)
+        try_delete_file(downloaded_filename)
+        if len(sections) == 1:
+            # special case of one section; do not make a zip, find the sectioned file and move on.
             downloaded_filename = find_files(file_id)[0]
-            cut_sections(downloaded_filename, filename_prefix, sections)
-            try_delete_file(downloaded_filename)
-            files_to_zip = find_files(file_id)
+        else:
             zip_filename = f"{temp_dir}{filename_prefix}files.zip"
+            files_to_zip = find_files(file_id)
             with ZipFile(zip_filename, 'w') as zip_file:
                 processed_filenames = []
                 for f in files_to_zip:
@@ -163,10 +167,10 @@ def download_video(video_id: str,
                     try_delete_file(written_filename)
             return zip_filename
 
-        main_filename = find_files(file_id)[0]
-        if processing_required:
-            main_filename = do_processing(main_filename, download_as_gif, processing)
-        return main_filename
+    main_filename = downloaded_filename
+    if processing_required:
+        main_filename = do_processing(main_filename, download_as_gif, processing)
+    return main_filename
 
 
 def download_videos(video_ids: List[str], media_type: str) -> str:
