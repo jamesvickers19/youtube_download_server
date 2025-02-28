@@ -18,6 +18,11 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=https://api.honeycomb.io
     volumes:
       - ./server/app/frontend:/app/frontend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
   nginx:
     image: nginx:alpine
     restart: always
@@ -30,6 +35,11 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
   certbot:
     image: certbot/certbot
     restart: always
@@ -38,3 +48,8 @@ services:
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
