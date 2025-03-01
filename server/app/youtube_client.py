@@ -98,6 +98,13 @@ def find_files(filename):
     return glob.glob(f"{temp_dir}{filename}*")
 
 
+def find_one_file_or_throw(filename):
+    found = find_files(filename)
+    if len(found) == 1:
+        return found[0]
+    raise Exception(f"Could not find one file with name {filename}; found {len(found)}")
+
+
 def cut_sections(input_file, filename_prefix, sections: List[Section]):
     file_ext = os.path.splitext(input_file)[1]
 
@@ -145,13 +152,13 @@ def download_video(video_id: str,
     processing_required = (processing is not None and media_type == 'video') or download_as_gif
     with build_youtube_dl_client(ytdl_params) as ytdl:
         error = ytdl.download([youtube_video_url(video_id)])
-    downloaded_filename = find_files(file_id)[0]
+    downloaded_filename = find_one_file_or_throw(file_id)
     if len(sections) > 0:
         cut_sections(downloaded_filename, filename_prefix, sections)
         try_delete_file(downloaded_filename)
         if len(sections) == 1:
             # special case of one section; do not make a zip, find the sectioned file and move on.
-            downloaded_filename = find_files(file_id)[0]
+            downloaded_filename = find_one_file_or_throw(file_id)
         else:
             zip_filename = f"{temp_dir}{filename_prefix}files.zip"
             files_to_zip = find_files(file_id)
@@ -186,7 +193,7 @@ def download_videos(video_ids: List[str], media_type: str) -> str:
         }
         with build_youtube_dl_client(ytdl_params) as ytdl:
             error = ytdl.download([youtube_video_url(video_id)])
-            filenames.append(find_files(file_id)[0])
+            filenames.append(find_one_file_or_throw(file_id))
     zip_filename = f"{temp_dir}{uuid.uuid4()}_files.zip"
     filename_prefix_len = len(f"{uuid.uuid4()}_")
     with ZipFile(zip_filename, 'w') as zip_file:

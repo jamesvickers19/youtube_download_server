@@ -1,4 +1,4 @@
-from fastapi import BackgroundTasks, FastAPI
+from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from models import ProcessingParameters, Section
@@ -25,12 +25,19 @@ def try_delete_file(filename):
 
 @app.get('/video_meta/{video_id}')
 def get_meta_for_video(video_id):
-    return get_video_meta(video_id)
-
+    try:
+        return get_video_meta(video_id)
+    except Exception as ex:
+        print(f"Error in /video_meta/{video_id}; playlist_id: {video_id}, exception: {ex}")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error")
 
 @app.get('/playlist_meta/{playlist_id}')
 def get_meta_for_playlist(playlist_id):
-    return get_playlist_meta(playlist_id)
+    try:
+        return get_playlist_meta(playlist_id)
+    except Exception as ex:
+        print(f"Error in /playlist_meta/{playlist_id}; playlist_id: {playlist_id}, exception: {ex}")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error")
 
 
 def get_extension(filename):
@@ -54,23 +61,27 @@ class DownloadVideoRequest(BaseModel):
 @app.post('/download_video')
 def download_video_by_id(request: DownloadVideoRequest, background_tasks: BackgroundTasks):
     # Download video
-    downloaded_file = download_video(
-        video_id=request.video_id,
-        media_type=request.media_type,
-        sections=request.sections,
-        processing=request.processing)
-    # Cleanup downloaded file after the request
-    background_tasks.add_task(try_delete_file, downloaded_file)
-    extension = get_extension(downloaded_file)[1:]  # leave off the starting . in the extension
-    if len(request.sections) > 0:
-        mimetype = "application/zip"
-    elif request.media_type == 'gif':
-        mimetype = "image/gif"
-    else:
-        mimetype = f"{request.media_type}/{extension}"
+    try:
+        downloaded_file = download_video(
+            video_id=request.video_id,
+            media_type=request.media_type,
+            sections=request.sections,
+            processing=request.processing)
+        # Cleanup downloaded file after the request
+        background_tasks.add_task(try_delete_file, downloaded_file)
+        extension = get_extension(downloaded_file)[1:]  # leave off the starting . in the extension
+        if len(request.sections) > 0:
+            mimetype = "application/zip"
+        elif request.media_type == 'gif':
+            mimetype = "image/gif"
+        else:
+            mimetype = f"{request.media_type}/{extension}"
 
-    download_name = f"{sanitize_filename(request.filename)}.{extension}"
-    return FileResponse(path=downloaded_file, filename=download_name, media_type=mimetype)
+        download_name = f"{sanitize_filename(request.filename)}.{extension}"
+        return FileResponse(path=downloaded_file, filename=download_name, media_type=mimetype)
+    except Exception as ex:
+        print(f"Error in /download_videos; request: {request}, exception: {ex}")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error")
 
 
 @app.options('/download_videos')
@@ -86,18 +97,22 @@ class DownloadVideosRequest(BaseModel):
 
 @app.post('/download_videos')
 def download_videos_by_ids(request: DownloadVideosRequest, background_tasks: BackgroundTasks):
-    # Download videos
-    downloaded_file = download_videos(video_ids=request.video_ids, media_type=request.media_type)
-    # Cleanup downloaded file after the request
-    background_tasks.add_task(try_delete_file, downloaded_file)
-    extension = get_extension(downloaded_file)[1:]  # leave off the starting . in the extension
-    if len(request.video_ids) > 0:
-        mimetype = "application/zip"
-    else:
-        mimetype = f"{request.media_type}/{extension}"
+    try:
+        # Download videos
+        downloaded_file = download_videos(video_ids=request.video_ids, media_type=request.media_type)
+        # Cleanup downloaded file after the request
+        background_tasks.add_task(try_delete_file, downloaded_file)
+        extension = get_extension(downloaded_file)[1:]  # leave off the starting . in the extension
+        if len(request.video_ids) > 0:
+            mimetype = "application/zip"
+        else:
+            mimetype = f"{request.media_type}/{extension}"
 
-    download_name = f"{sanitize_filename(request.filename)}.{extension}"
-    return FileResponse(path=downloaded_file, filename=download_name, media_type=mimetype)
+        download_name = f"{sanitize_filename(request.filename)}.{extension}"
+        return FileResponse(path=downloaded_file, filename=download_name, media_type=mimetype)
+    except Exception as ex:
+        print(f"Error in /download_videos; request: {request}, exception: {ex}")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error")
 
 
 # This has to be after route definitions or apparently it overrides
