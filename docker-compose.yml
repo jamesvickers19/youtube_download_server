@@ -53,3 +53,15 @@ services:
       options:
         max-size: "200k"
         max-file: "10"
+  # cleanup any downloaded files not handled by the server, e.g. a request fails or the client disconnects
+  # or some yt-dlp problem.
+  file-cleaner:
+    image: alpine
+    container_name: file-cleaner
+    build:
+      context: ./server
+      dockerfile: Dockerfile.file_cleaner
+    volumes:
+      - /tmp:/tmp
+    command: [ "sh", "-c", "while true; do /app/cleanup_download_files.sh; sleep 600; done" ]
+    restart: always
