@@ -4,31 +4,35 @@ import React from "react";
 
 export const VideoSection = (props) => {
   return (
-    <div>
-      <input
-        index={props.index}
-        onChange={props.onSelectedChange}
-        type="checkbox"
-        checked={props.section.selected}
-      />
-      <input
-        index={props.index}
-        value={props.section.name}
-        onChange={props.onNameChange}
-      />
+    <div className="section-card">
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+        <input
+          index={props.index}
+          onChange={props.onSelectedChange}
+          type="checkbox"
+          checked={props.section.selected}
+        />
+        <input
+          index={props.index}
+          value={props.section.name}
+          onChange={props.onNameChange}
+          style={{ flex: 1 }}
+        />
+        <button
+          type="button"
+          onClick={() => props.onDownloadSection(props.section)}
+        >
+          Download
+        </button>
+      </div>
       <a
         href={`https://youtube.com/watch?v=${props.videoId}&t=${props.section.start}`}
         target="_blank"
         rel="noreferrer"
+        style={{ fontSize: '14px', color: '#718096' }}
       >
         {toTimeString(props.section.start)} - {toTimeString(props.section.end)}
       </a>
-      <button
-        type="button"
-        onClick={() => props.onDownloadSection(props.section)}
-      >
-        Download
-      </button>
     </div>
   );
 };

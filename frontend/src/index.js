@@ -464,7 +464,9 @@ class StartForm extends React.Component {
         <ThreeCircles height="350" width="350" color="#4fa94d" visible={true} />
       </div>
     );
-    let errorLabel = <label>{this.state.errorMessage}</label>;
+    let errorLabel = this.state.errorMessage ? (
+      <div className="error-message">{this.state.errorMessage}</div>
+    ) : null;
     let selectAllSectionsInput = this.nullIfNoSections(
       <input
         checked={this.state.sections.every((t) => t.selected)}
@@ -550,10 +552,8 @@ class StartForm extends React.Component {
     // initialize controls only used for individual videos
     if (this.state.fetchedVideoId && !this.state.fetchedPlaylistId) {
       titleLabel = (
-        <div>
-          <label style={{ fontStyle: "italic" }}>
-            Video: {this.state.title}
-          </label>
+        <div className="section-title">
+          Video: {this.state.title}
         </div>
       );
       let orientationTransformStyle = () => {
@@ -574,7 +574,7 @@ class StartForm extends React.Component {
         },
       };
       videoDisplay = (
-        <div style={{ width: `${ytPreviewWidth}px` }}>
+        <div className="video-card text-center">
           <YouTube
             videoId={this.state.fetchedVideoId}
             opts={ytDisplayOpts}
@@ -677,10 +677,8 @@ class StartForm extends React.Component {
     // initialize controls only used for playlists
     if (!this.state.fetchedVideoId && this.state.fetchedPlaylistId) {
       titleLabel = (
-        <div>
-          <label style={{ fontStyle: "italic" }}>
-            Playlist: {this.state.title}
-          </label>
+        <div className="section-title">
+          Playlist: {this.state.title}
         </div>
       );
       // <option value="gif">GIF</option>
@@ -698,95 +696,93 @@ class StartForm extends React.Component {
     }
 
     return (
-      <>
+      <div className="app-container">
         {this.state.downloading ? loadingIndicator : null}
         <form>
           <Row>
             <Col span={24}>
-              <label style={{ fontSize: "30px" }}>Enter a YouTube link:</label>
+              <h1>⚔️ YouTube Slicer ⚔️</h1>
+              <label className="main-label">Enter a YouTube link:</label>
             </Col>
           </Row>
           <Row>
-            <Col span={24}>{urlInput}</Col>
-          </Row>
-          <br />
-          <Row>
-            <Col span={24}>{submitBtn}</Col>
+            <Col span={24} className="mb-16">{urlInput}</Col>
           </Row>
           <Row>
-            <Col span={24}>{errorLabel}</Col>
+            <Col span={24} className="mb-16">{submitBtn}</Col>
           </Row>
           <Row>
-            <Col span={24}>{titleLabel}</Col>
+            <Col span={24} className="mb-16">{errorLabel}</Col>
+          </Row>
+          <Row>
+            <Col span={24} className="mb-24">{titleLabel}</Col>
           </Row>
           {this.state.errorMessage ? null : (
             <>
               <Row>
-                <Col span={24}>{videoDisplay}</Col>
+                <Col span={24} className="mb-24">{videoDisplay}</Col>
               </Row>
               <Row>
-                <Col span={24}>{timeRangeInput}</Col>
+                <Col span={24} className="mb-16">{timeRangeInput}</Col>
               </Row>
               <Row>
-                <Col span={24}>{downloadTimeRangeBtn}</Col>
+                <Col span={24} className="mb-16">{downloadTimeRangeBtn}</Col>
               </Row>
               <Row>
-                <Col span={24}>
-                  {downloadFullBtn}
-                  {mediaTypeSelector}
-                  {/* {reflectionInput} */}
-                </Col>
-              </Row>
-              {/* <Row>
-                <Col span={24}>
-                  {playbackSpeedInput}
-                  {blackAndWhiteInput}
-                </Col>
-              </Row> */}
-              <Row>
-                <Col span={24}>{downloadSectionsBtn}</Col>
-              </Row>
-              <Row>
-                <Col span={24}>
-                  {selectAllSectionsInput}
-                  {selectAllSectionsInputLabel}
+                <Col span={24} className="mb-24">
+                  <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    {downloadFullBtn}
+                    {mediaTypeSelector}
+                  </div>
                 </Col>
               </Row>
               <Row>
-                <Col span={24}>{sectionsList}</Col>
+                <Col span={24} className="mb-16">{downloadSectionsBtn}</Col>
               </Row>
               <Row>
-                <Col span={24}>{downloadPlaylistVideosBtn}</Col>
-              </Row>
-              <Row>
-                <Col span={24}>
-                  {selectAllPlaylistVideosInput}
-                  {selectAllPlaylistVideosInputLabel}
+                <Col span={24} className="mb-16">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {selectAllSectionsInput}
+                    {selectAllSectionsInputLabel}
+                  </div>
                 </Col>
               </Row>
               <Row>
-                <Col span={24}>{playlistVideosList}</Col>
+                <Col span={24} className="mb-24">{sectionsList}</Col>
+              </Row>
+              <Row>
+                <Col span={24} className="mb-16">{downloadPlaylistVideosBtn}</Col>
+              </Row>
+              <Row>
+                <Col span={24} className="mb-16">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {selectAllPlaylistVideosInput}
+                    {selectAllPlaylistVideosInputLabel}
+                  </div>
+                </Col>
+              </Row>
+              <Row>
+                <Col span={24} className="mb-24">{playlistVideosList}</Col>
               </Row>
             </>
           )}
         </form>
-        <hr />
-        <p>
-          <a
-            href="https://www.paypal.com/ncp/payment/LJT5QYAJ62V8L"
-            style={{ fontSize: "30px" }}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Support the site ❤️
+        <div style={{ textAlign: 'center', marginTop: '48px', padding: '24px 0', borderTop: '1px solid #e2e8f0' }}>
+          <p style={{ marginBottom: '16px' }}>
+            <a
+              href="https://www.paypal.com/ncp/payment/LJT5QYAJ62V8L"
+              style={{ fontSize: "24px", fontWeight: "600" }}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Support the site ❤️
+            </a>
+          </p>
+          <a style={{ fontSize: "16px" }} href="mailto:lambdatallc@gmail.com">
+            Contact Us
           </a>
-        </p>
-        <br />
-        <a style={{ fontSize: "20px" }} href="mailto:lambdatallc@gmail.com">
-          {" "}
-          Contact Us{" "}
-        </a>
-      </>
+        </div>
+      </div>
     );
   }
 }
