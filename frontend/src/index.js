@@ -612,6 +612,44 @@ class StartForm extends React.Component {
           Download time range
         </button>
       );
+      // Helper function to create time marks based on video duration
+      const createTimeMarks = (durationMs) => {
+        const MINUTE = 60 * 1000;
+        const MIN_SPACING = 2 * MINUTE; // Minimum 2 minutes between markers
+        const marks = { 0: '0:00' };
+        
+        // Determine interval based on video length
+        let intervalMs;
+        if (durationMs < 5 * MINUTE) {
+          // Short videos: no intermediate marks
+          intervalMs = null;
+        } else if (durationMs < 30 * MINUTE) {
+          // Medium videos: every 5 minutes
+          intervalMs = 5 * MINUTE;
+        } else if (durationMs < 60 * MINUTE) {
+          // Long videos: every 10 minutes
+          intervalMs = 10 * MINUTE;
+        } else {
+          // Very long videos: every 15 minutes
+          intervalMs = 15 * MINUTE;
+        }
+        
+        // Add intermediate marks
+        if (intervalMs) {
+          for (let time = intervalMs; time < durationMs; time += intervalMs) {
+            // Only add mark if it's far enough from the end
+            if (durationMs - time >= MIN_SPACING) {
+              marks[time] = toTimeString(time);
+            }
+          }
+        }
+        
+        // Always add end mark
+        marks[durationMs] = toTimeString(durationMs);
+        return marks;
+      };
+      
+      const timeMarks = createTimeMarks(this.state.end);
       timeRangeInput = (
         <Slider
           range
@@ -619,6 +657,7 @@ class StartForm extends React.Component {
           min={0}
           max={this.state.end}
           value={[this.state.downloadTimeStart, this.state.downloadTimeEnd]}
+          marks={timeMarks}
           style={{ marginTop: 16, width: "100%" }}
           step={50}
           tooltip={{ formatter: toTimeString, placement: "topRight" }}

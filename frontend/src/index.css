@@ -145,6 +145,16 @@ ul {
   margin-bottom: 16px;
 }
 
+/* Fix for time marker positioning */
+.time-range-group .ant-slider-mark {
+  padding: 0 8px; /* Add horizontal padding to prevent overflow */
+}
+
+.time-range-group .ant-slider-mark-text {
+  white-space: nowrap; /* Prevent text wrapping */
+  transform: translateX(-50%); /* Center the text over the mark */
+}
+
 @keyframes glowing {
   0% {
     background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
