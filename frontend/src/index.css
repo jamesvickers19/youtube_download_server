@@ -1,61 +1,418 @@
+/* Universal box-sizing fix */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 body {
-  background-color: white;
+  background: linear-gradient(135deg, #f7fafc 0%, #e2e8f0 100%);
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #2d3748;
+}
+
+/* Container for the entire app */
+.app-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 16px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  margin-top: 32px;
+  margin-bottom: 32px;
+  overflow: hidden; /* Prevent any child elements from breaking the layout */
+}
+
+/* Typography */
+h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1a365d;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 16px;
 }
 
 label {
-  font-size: 20px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.main-label {
+  font-size: 24px;
   font-weight: 700;
+  color: #1a365d;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2d3748;
+  font-style: italic;
+  margin: 24px 0 16px 0;
 }
 
 #urlInput {
-  height: 25px;
-  width: 50%;
+  width: 100%;
+  max-width: 100%; /* Safety net for responsive design */
+  height: 48px;
+  padding: 12px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.2s ease-in-out;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
+#urlInput:focus {
+  outline: none;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+}
+
+#urlInput:disabled {
+  background-color: #f7fafc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* List and card styling */
 ul {
   padding: 0;
   list-style-position: inside;
 }
 
+.video-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+}
+
+.section-card {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease-in-out;
+}
+
+.section-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.playlist-item {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease-in-out;
+}
+
+.playlist-item:hover {
+  border-color: #3182ce;
+  box-shadow: 0 2px 8px rgba(49, 130, 206, 0.1);
+}
+
+.time-range-group {
+  background: #f8f9fa;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+/* Fix for time marker positioning */
+.time-range-group .ant-slider-mark {
+  padding: 0 8px; /* Add horizontal padding to prevent overflow */
+}
+
+.time-range-group .ant-slider-mark-text {
+  white-space: nowrap; /* Prevent text wrapping */
+  transform: translateX(-50%); /* Center the text over the mark */
+}
+
 @keyframes glowing {
   0% {
-    background-color: #2ba805;
-    box-shadow: 0 0 5px #2ba805;
+    background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
+    box-shadow: 0 4px 12px rgba(49, 130, 206, 0.3);
   }
 
   50% {
-    background-color: #49e819;
-    box-shadow: 0 0 20px #49e819;
+    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+    box-shadow: 0 6px 20px rgba(66, 153, 225, 0.5);
   }
 
   100% {
-    background-color: #2ba805;
-    box-shadow: 0 0 5px #2ba805;
+    background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
+    box-shadow: 0 4px 12px rgba(49, 130, 206, 0.3);
   }
 }
 
 #submitBtn {
-  -webkit-border-radius: 60px;
-  border-radius: 60px;
+  width: 100%;
+  height: 56px;
   border: none;
-  color: #eeeeee;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
   cursor: pointer;
-  display: inline-block;
-  font-family: sans-serif;
-  font-size: 20px;
-  padding: 10px 10px;
-  text-align: center;
-  text-decoration: none;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 4px 12px rgba(49, 130, 206, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+#submitBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(49, 130, 206, 0.4);
+}
+
+#submitBtn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+#submitBtn:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 #loadingIndicator {
   position: fixed;
-  background: rgba(255, 255, 255, 0.8);
-  top: 90px;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
   display: flex;
-  justify-content: left;
-  align-items: left;
+  justify-content: center;
+  align-items: center;
   z-index: 9999;
+}
+
+/* Button styles */
+button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 8px rgba(56, 161, 105, 0.3);
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(56, 161, 105, 0.4);
+}
+
+button:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Form controls */
+select {
+  padding: 8px 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  background: white;
+  font-size: 14px;
+  transition: border-color 0.2s ease-in-out;
+}
+
+select:focus {
+  outline: none;
+  border-color: #3182ce;
+}
+
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-right: 12px;
+  cursor: pointer;
+}
+
+input[type="text"] {
+  padding: 8px 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s ease-in-out;
+}
+
+input[type="text"]:focus {
+  outline: none;
+  border-color: #3182ce;
+}
+
+/* Links */
+a {
+  color: #3182ce;
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
+}
+
+a:hover {
+  color: #2c5282;
+  text-decoration: underline;
+}
+
+/* Error messages */
+.error-message {
+  color: #e53e3e;
+  background: #fed7d7;
+  border: 1px solid #feb2b2;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 16px 0;
+  font-weight: 500;
+}
+
+/* Spacing utilities */
+.mb-16 {
+  margin-bottom: 16px;
+}
+
+.mb-24 {
+  margin-bottom: 24px;
+}
+
+.mb-32 {
+  margin-bottom: 32px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* Responsive design for mobile devices */
+@media (max-width: 768px) {
+  .app-container {
+    margin: 8px;
+    padding: 16px 12px;
+  }
+  
+  h1 {
+    font-size: 24px;
+  }
+  
+  .main-label {
+    font-size: 18px;
+  }
+  
+  /* Mobile-optimized video player */
+  .video-card iframe {
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100%;
+    aspect-ratio: 16/9;
+  }
+  
+  /* Touch-friendly buttons */
+  button {
+    min-height: 48px;
+    font-size: 16px;
+    padding: 14px 24px;
+  }
+  
+  #submitBtn {
+    height: 56px;
+    font-size: 18px;
+  }
+  
+  /* Larger checkboxes for touch */
+  input[type="checkbox"] {
+    width: 24px;
+    height: 24px;
+    margin-right: 16px;
+  }
+  
+  /* Enhanced text inputs for mobile */
+  input[type="text"] {
+    padding: 12px 16px;
+    font-size: 16px;
+    min-height: 44px;
+  }
+  
+  #urlInput {
+    font-size: 16px;
+    padding: 14px 16px;
+    height: 52px;
+  }
+  
+  /* Better select dropdowns on mobile */
+  select {
+    padding: 12px 16px;
+    font-size: 16px;
+    min-height: 44px;
+  }
+  
+  /* Enhanced slider for touch interaction */
+  .ant-slider-handle {
+    width: 20px;
+    height: 20px;
+    border: 3px solid #3182ce;
+  }
+  
+  .ant-slider-track {
+    height: 6px;
+  }
+  
+  .ant-slider-rail {
+    height: 6px;
+  }
+  
+  /* Improved spacing for mobile */
+  .time-range-group {
+    padding: 16px;
+  }
+  
+  .section-card {
+    padding: 12px;
+  }
+  
+  .playlist-item {
+    padding: 12px;
+  }
+  
+  /* Better link styling for touch */
+  a {
+    min-height: 44px;
+    padding: 4px;
+    display: inline-block;
+  }
 }

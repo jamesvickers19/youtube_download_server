@@ -464,7 +464,9 @@ class StartForm extends React.Component {
         <ThreeCircles height="350" width="350" color="#4fa94d" visible={true} />
       </div>
     );
-    let errorLabel = <label>{this.state.errorMessage}</label>;
+    let errorLabel = this.state.errorMessage ? (
+      <div className="error-message">{this.state.errorMessage}</div>
+    ) : null;
     let selectAllSectionsInput = this.nullIfNoSections(
       <input
         checked={this.state.sections.every((t) => t.selected)}
@@ -550,10 +552,8 @@ class StartForm extends React.Component {
     // initialize controls only used for individual videos
     if (this.state.fetchedVideoId && !this.state.fetchedPlaylistId) {
       titleLabel = (
-        <div>
-          <label style={{ fontStyle: "italic" }}>
-            Video: {this.state.title}
-          </label>
+        <div className="section-title">
+          Video: {this.state.title}
         </div>
       );
       let orientationTransformStyle = () => {
@@ -563,9 +563,9 @@ class StartForm extends React.Component {
           this.state.reflection === "vertical" ? "scaleY(-1)" : "";
         return `${horizontalTransform} ${verticalTransform}`;
       };
-      const ytPreviewWidth = 400;
+      const ytPreviewWidth = 640;
       let ytDisplayOpts = {
-        height: "225",
+        height: "360",
         width: ytPreviewWidth,
         playerVars: {
           // https://developers.google.com/youtube/player_parameters
@@ -574,7 +574,7 @@ class StartForm extends React.Component {
         },
       };
       videoDisplay = (
-        <div style={{ width: `${ytPreviewWidth}px` }}>
+        <div className="video-card text-center">
           <YouTube
             videoId={this.state.fetchedVideoId}
             opts={ytDisplayOpts}
@@ -612,6 +612,44 @@ class StartForm extends React.Component {
           Download time range
         </button>
       );
+      // Helper function to create time marks based on video duration
+      const createTimeMarks = (durationMs) => {
+        const MINUTE = 60 * 1000;
+        const MIN_SPACING = 2 * MINUTE; // Minimum 2 minutes between markers
+        const marks = { 0: '0:00' };
+        
+        // Determine interval based on video length
+        let intervalMs;
+        if (durationMs < 5 * MINUTE) {
+          // Short videos: no intermediate marks
+          intervalMs = null;
+        } else if (durationMs < 30 * MINUTE) {
+          // Medium videos: every 5 minutes
+          intervalMs = 5 * MINUTE;
+        } else if (durationMs < 60 * MINUTE) {
+          // Long videos: every 10 minutes
+          intervalMs = 10 * MINUTE;
+        } else {
+          // Very long videos: every 15 minutes
+          intervalMs = 15 * MINUTE;
+        }
+        
+        // Add intermediate marks
+        if (intervalMs) {
+          for (let time = intervalMs; time < durationMs; time += intervalMs) {
+            // Only add mark if it's far enough from the end
+            if (durationMs - time >= MIN_SPACING) {
+              marks[time] = toTimeString(time);
+            }
+          }
+        }
+        
+        // Always add end mark
+        marks[durationMs] = toTimeString(durationMs);
+        return marks;
+      };
+      
+      const timeMarks = createTimeMarks(this.state.end);
       timeRangeInput = (
         <Slider
           range
@@ -619,7 +657,8 @@ class StartForm extends React.Component {
           min={0}
           max={this.state.end}
           value={[this.state.downloadTimeStart, this.state.downloadTimeEnd]}
-          style={{ marginTop: 16, width: `${ytPreviewWidth}px` }}
+          marks={timeMarks}
+          style={{ marginTop: 16, width: "100%" }}
           step={50}
           tooltip={{ formatter: toTimeString, placement: "topRight" }}
           onChange={this.onTimeRangeChanged}
@@ -677,10 +716,8 @@ class StartForm extends React.Component {
     // initialize controls only used for playlists
     if (!this.state.fetchedVideoId && this.state.fetchedPlaylistId) {
       titleLabel = (
-        <div>
-          <label style={{ fontStyle: "italic" }}>
-            Playlist: {this.state.title}
-          </label>
+        <div className="section-title">
+          Playlist: {this.state.title}
         </div>
       );
       // <option value="gif">GIF</option>
@@ -698,95 +735,99 @@ class StartForm extends React.Component {
     }
 
     return (
-      <>
+      <div className="app-container">
         {this.state.downloading ? loadingIndicator : null}
         <form>
           <Row>
             <Col span={24}>
-              <label style={{ fontSize: "30px" }}>Enter a YouTube link:</label>
+              <h1>⚔️ YouTube Slicer ⚔️</h1>
+              <label className="main-label">Enter a YouTube link:</label>
             </Col>
           </Row>
           <Row>
-            <Col span={24}>{urlInput}</Col>
-          </Row>
-          <br />
-          <Row>
-            <Col span={24}>{submitBtn}</Col>
+            <Col span={24} className="mb-16">{urlInput}</Col>
           </Row>
           <Row>
-            <Col span={24}>{errorLabel}</Col>
+            <Col span={24} className="mb-16">{submitBtn}</Col>
           </Row>
           <Row>
-            <Col span={24}>{titleLabel}</Col>
+            <Col span={24} className="mb-16">{errorLabel}</Col>
+          </Row>
+          <Row>
+            <Col span={24} className="mb-24">{titleLabel}</Col>
           </Row>
           {this.state.errorMessage ? null : (
             <>
               <Row>
-                <Col span={24}>{videoDisplay}</Col>
+                <Col span={24} className="mb-24">{videoDisplay}</Col>
               </Row>
               <Row>
-                <Col span={24}>{timeRangeInput}</Col>
+                <Col span={24} className="mb-16">{mediaTypeSelector}</Col>
               </Row>
               <Row>
-                <Col span={24}>{downloadTimeRangeBtn}</Col>
+                <Col span={24} className="mb-16">{downloadFullBtn}</Col>
+              </Row>
+              {this.state.sections.length > 0 ? (
+                <>
+                  <Row>
+                    <Col span={24}>
+                      <div className="time-range-group">
+                        {timeRangeInput}
+                        <div style={{ marginTop: '16px' }}>
+                          {downloadTimeRangeBtn}
+                        </div>
+                      </div>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col span={24} className="mb-16">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {selectAllSectionsInput}
+                        {selectAllSectionsInputLabel}
+                      </div>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col span={24} className="mb-16">{downloadSectionsBtn}</Col>
+                  </Row>
+                  <Row>
+                    <Col span={24} className="mb-24">{sectionsList}</Col>
+                  </Row>
+                </>
+              ) : null}
+              <Row>
+                <Col span={24} className="mb-16">{downloadPlaylistVideosBtn}</Col>
               </Row>
               <Row>
-                <Col span={24}>
-                  {downloadFullBtn}
-                  {mediaTypeSelector}
-                  {/* {reflectionInput} */}
+                <Col span={24} className="mb-16">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {selectAllPlaylistVideosInput}
+                    {selectAllPlaylistVideosInputLabel}
+                  </div>
                 </Col>
               </Row>
-              {/* <Row>
-                <Col span={24}>
-                  {playbackSpeedInput}
-                  {blackAndWhiteInput}
-                </Col>
-              </Row> */}
               <Row>
-                <Col span={24}>{downloadSectionsBtn}</Col>
-              </Row>
-              <Row>
-                <Col span={24}>
-                  {selectAllSectionsInput}
-                  {selectAllSectionsInputLabel}
-                </Col>
-              </Row>
-              <Row>
-                <Col span={24}>{sectionsList}</Col>
-              </Row>
-              <Row>
-                <Col span={24}>{downloadPlaylistVideosBtn}</Col>
-              </Row>
-              <Row>
-                <Col span={24}>
-                  {selectAllPlaylistVideosInput}
-                  {selectAllPlaylistVideosInputLabel}
-                </Col>
-              </Row>
-              <Row>
-                <Col span={24}>{playlistVideosList}</Col>
+                <Col span={24} className="mb-24">{playlistVideosList}</Col>
               </Row>
             </>
           )}
         </form>
-        <hr />
-        <p>
-          <a
-            href="https://www.paypal.com/ncp/payment/LJT5QYAJ62V8L"
-            style={{ fontSize: "30px" }}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Support the site ❤️
+        <div style={{ textAlign: 'center', marginTop: '48px', padding: '24px 0', borderTop: '1px solid #e2e8f0' }}>
+          <p style={{ marginBottom: '16px' }}>
+            <a
+              href="https://www.paypal.com/ncp/payment/LJT5QYAJ62V8L"
+              style={{ fontSize: "24px", fontWeight: "600" }}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Support the site ❤️
+            </a>
+          </p>
+          <a style={{ fontSize: "16px" }} href="mailto:lambdatallc@gmail.com">
+            Contact Us
           </a>
-        </p>
-        <br />
-        <a style={{ fontSize: "20px" }} href="mailto:lambdatallc@gmail.com">
-          {" "}
-          Contact Us{" "}
-        </a>
-      </>
+        </div>
+      </div>
     );
   }
 }
