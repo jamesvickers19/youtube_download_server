@@ -619,7 +619,7 @@ class StartForm extends React.Component {
           min={0}
           max={this.state.end}
           value={[this.state.downloadTimeStart, this.state.downloadTimeEnd]}
-          style={{ marginTop: 16, width: `${ytPreviewWidth}px` }}
+          style={{ marginTop: 16, width: "100%" }}
           step={50}
           tooltip={{ formatter: toTimeString, placement: "topRight" }}
           onChange={this.onTimeRangeChanged}
@@ -723,19 +723,16 @@ class StartForm extends React.Component {
                 <Col span={24} className="mb-24">{videoDisplay}</Col>
               </Row>
               <Row>
-                <Col span={24} className="mb-16">{timeRangeInput}</Col>
-              </Row>
-              <Row>
-                <Col span={24} className="mb-16">{downloadTimeRangeBtn}</Col>
+                <Col span={24} className="mb-16">{mediaTypeSelector}</Col>
               </Row>
               <Row>
                 <Col span={24} className="mb-16">{downloadFullBtn}</Col>
               </Row>
               <Row>
-                <Col span={24} className="mb-24">{mediaTypeSelector}</Col>
+                <Col span={24} className="mb-16">{timeRangeInput}</Col>
               </Row>
               <Row>
-                <Col span={24} className="mb-16">{downloadSectionsBtn}</Col>
+                <Col span={24} className="mb-16">{downloadTimeRangeBtn}</Col>
               </Row>
               <Row>
                 <Col span={24} className="mb-16">
@@ -744,6 +741,9 @@ class StartForm extends React.Component {
                     {selectAllSectionsInputLabel}
                   </div>
                 </Col>
+              </Row>
+              <Row>
+                <Col span={24} className="mb-16">{downloadSectionsBtn}</Col>
               </Row>
               <Row>
                 <Col span={24} className="mb-24">{sectionsList}</Col>
