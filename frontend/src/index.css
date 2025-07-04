@@ -137,6 +137,14 @@ ul {
   box-shadow: 0 2px 8px rgba(49, 130, 206, 0.1);
 }
 
+.time-range-group {
+  background: #f8f9fa;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
 @keyframes glowing {
   0% {
     background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);

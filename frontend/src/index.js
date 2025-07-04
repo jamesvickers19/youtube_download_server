@@ -729,10 +729,14 @@ class StartForm extends React.Component {
                 <Col span={24} className="mb-16">{downloadFullBtn}</Col>
               </Row>
               <Row>
-                <Col span={24} className="mb-16">{timeRangeInput}</Col>
-              </Row>
-              <Row>
-                <Col span={24} className="mb-16">{downloadTimeRangeBtn}</Col>
+                <Col span={24}>
+                  <div className="time-range-group">
+                    {timeRangeInput}
+                    <div style={{ marginTop: '16px' }}>
+                      {downloadTimeRangeBtn}
+                    </div>
+                  </div>
+                </Col>
               </Row>
               <Row>
                 <Col span={24} className="mb-16">
