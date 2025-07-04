@@ -729,12 +729,10 @@ class StartForm extends React.Component {
                 <Col span={24} className="mb-16">{downloadTimeRangeBtn}</Col>
               </Row>
               <Row>
-                <Col span={24} className="mb-24">
-                  <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-                    {downloadFullBtn}
-                    {mediaTypeSelector}
-                  </div>
-                </Col>
+                <Col span={24} className="mb-16">{downloadFullBtn}</Col>
+              </Row>
+              <Row>
+                <Col span={24} className="mb-24">{mediaTypeSelector}</Col>
               </Row>
               <Row>
                 <Col span={24} className="mb-16">{downloadSectionsBtn}</Col>
