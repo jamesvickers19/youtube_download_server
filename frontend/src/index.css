@@ -319,18 +319,100 @@ a:hover {
   text-align: center;
 }
 
-/* Responsive design */
+/* Responsive design for mobile devices */
 @media (max-width: 768px) {
   .app-container {
-    margin: 16px;
-    padding: 24px 16px;
+    margin: 8px;
+    padding: 16px 12px;
   }
   
   h1 {
-    font-size: 28px;
+    font-size: 24px;
   }
   
   .main-label {
-    font-size: 20px;
+    font-size: 18px;
+  }
+  
+  /* Mobile-optimized video player */
+  .video-card iframe {
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100%;
+    aspect-ratio: 16/9;
+  }
+  
+  /* Touch-friendly buttons */
+  button {
+    min-height: 48px;
+    font-size: 16px;
+    padding: 14px 24px;
+  }
+  
+  #submitBtn {
+    height: 56px;
+    font-size: 18px;
+  }
+  
+  /* Larger checkboxes for touch */
+  input[type="checkbox"] {
+    width: 24px;
+    height: 24px;
+    margin-right: 16px;
+  }
+  
+  /* Enhanced text inputs for mobile */
+  input[type="text"] {
+    padding: 12px 16px;
+    font-size: 16px;
+    min-height: 44px;
+  }
+  
+  #urlInput {
+    font-size: 16px;
+    padding: 14px 16px;
+    height: 52px;
+  }
+  
+  /* Better select dropdowns on mobile */
+  select {
+    padding: 12px 16px;
+    font-size: 16px;
+    min-height: 44px;
+  }
+  
+  /* Enhanced slider for touch interaction */
+  .ant-slider-handle {
+    width: 20px;
+    height: 20px;
+    border: 3px solid #3182ce;
+  }
+  
+  .ant-slider-track {
+    height: 6px;
+  }
+  
+  .ant-slider-rail {
+    height: 6px;
+  }
+  
+  /* Improved spacing for mobile */
+  .time-range-group {
+    padding: 16px;
+  }
+  
+  .section-card {
+    padding: 12px;
+  }
+  
+  .playlist-item {
+    padding: 12px;
+  }
+  
+  /* Better link styling for touch */
+  a {
+    min-height: 44px;
+    padding: 4px;
+    display: inline-block;
   }
 }
