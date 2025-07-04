@@ -768,31 +768,33 @@ class StartForm extends React.Component {
                 <Col span={24} className="mb-16">{downloadFullBtn}</Col>
               </Row>
               {this.state.sections.length > 0 ? (
-                <Row>
-                  <Col span={24}>
-                    <div className="time-range-group">
-                      {timeRangeInput}
-                      <div style={{ marginTop: '16px' }}>
-                        {downloadTimeRangeBtn}
+                <>
+                  <Row>
+                    <Col span={24}>
+                      <div className="time-range-group">
+                        {timeRangeInput}
+                        <div style={{ marginTop: '16px' }}>
+                          {downloadTimeRangeBtn}
+                        </div>
                       </div>
-                    </div>
-                  </Col>
-                </Row>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col span={24} className="mb-16">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {selectAllSectionsInput}
+                        {selectAllSectionsInputLabel}
+                      </div>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col span={24} className="mb-16">{downloadSectionsBtn}</Col>
+                  </Row>
+                  <Row>
+                    <Col span={24} className="mb-24">{sectionsList}</Col>
+                  </Row>
+                </>
               ) : null}
-              <Row>
-                <Col span={24} className="mb-16">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    {selectAllSectionsInput}
-                    {selectAllSectionsInputLabel}
-                  </div>
-                </Col>
-              </Row>
-              <Row>
-                <Col span={24} className="mb-16">{downloadSectionsBtn}</Col>
-              </Row>
-              <Row>
-                <Col span={24} className="mb-24">{sectionsList}</Col>
-              </Row>
               <Row>
                 <Col span={24} className="mb-16">{downloadPlaylistVideosBtn}</Col>
               </Row>
