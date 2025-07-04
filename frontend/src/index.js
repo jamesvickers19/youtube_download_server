@@ -563,9 +563,9 @@ class StartForm extends React.Component {
           this.state.reflection === "vertical" ? "scaleY(-1)" : "";
         return `${horizontalTransform} ${verticalTransform}`;
       };
-      const ytPreviewWidth = 400;
+      const ytPreviewWidth = 640;
       let ytDisplayOpts = {
-        height: "225",
+        height: "360",
         width: ytPreviewWidth,
         playerVars: {
           // https://developers.google.com/youtube/player_parameters
